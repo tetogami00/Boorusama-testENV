@@ -47,7 +47,6 @@ import 'package:boorusama/boorus/danbooru/infra/local/repositories/metatags/user
 import 'package:boorusama/boorus/danbooru/infra/repositories/count/post_count_repository_api.dart';
 import 'package:boorusama/boorus/danbooru/infra/repositories/saved_searches/save_search_repository_api.dart';
 import 'package:boorusama/boorus/danbooru/infra/services/bulk_downloader.dart';
-import 'package:boorusama/core/analytics.dart';
 import 'package:boorusama/core/application/api/api.dart';
 import 'package:boorusama/core/application/download/download_service.dart';
 import 'package:boorusama/core/application/networking/networking.dart';
@@ -198,7 +197,6 @@ void main() async {
   );
 
   await ensureI18nInitialized();
-  await initializeAnalytics(settings);
   initializeErrorHandlers(settings);
 
   void run() {

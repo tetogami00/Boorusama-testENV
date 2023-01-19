@@ -17,9 +17,3 @@ bool isAnalyticsEnabled(Settings settings) =>
 NavigatorObserver getAnalyticsObserver() => FirebaseAnalyticsObserver(
       analytics: FirebaseAnalytics.instance,
     );
-
-Future<void> initializeAnalytics(Settings settings) async {
-  if (isAnalyticsEnabled(settings)) {
-    await ensureFirebaseInitialized();
-  }
-}
