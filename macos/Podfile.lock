@@ -17,11 +17,6 @@ PODS:
   - path_provider_macos (0.0.1):
     - FlutterMacOS
   - ReachabilitySwift (5.0.0)
-  - Sentry/HybridSDK (7.31.3)
-  - sentry_flutter (0.0.1):
-    - Flutter
-    - FlutterMacOS
-    - Sentry/HybridSDK (= 7.31.3)
   - share_plus (0.0.1):
     - FlutterMacOS
   - shared_preferences_macos (0.0.1):
@@ -44,7 +39,6 @@ DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral`)
   - package_info_plus (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos`)
   - path_provider_macos (from `Flutter/ephemeral/.symlinks/plugins/path_provider_macos/macos`)
-  - sentry_flutter (from `Flutter/ephemeral/.symlinks/plugins/sentry_flutter/macos`)
   - share_plus (from `Flutter/ephemeral/.symlinks/plugins/share_plus/macos`)
   - shared_preferences_macos (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_macos/macos`)
   - sqflite (from `Flutter/ephemeral/.symlinks/plugins/sqflite/macos`)
@@ -56,7 +50,6 @@ SPEC REPOS:
   trunk:
     - FMDB
     - ReachabilitySwift
-    - Sentry
 
 EXTERNAL SOURCES:
   bitsdojo_window_macos:
@@ -73,8 +66,6 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos
   path_provider_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/path_provider_macos/macos
-  sentry_flutter:
-    :path: Flutter/ephemeral/.symlinks/plugins/sentry_flutter/macos
   share_plus:
     :path: Flutter/ephemeral/.symlinks/plugins/share_plus/macos
   shared_preferences_macos:
@@ -98,8 +89,6 @@ SPEC CHECKSUMS:
   package_info_plus: 02d7a575e80f194102bef286361c6c326e4c29ce
   path_provider_macos: 3c0c3b4b0d4a76d2bf989a913c2de869c5641a19
   ReachabilitySwift: 985039c6f7b23a1da463388634119492ff86c825
-  Sentry: 08884c523575ec0f6690d94ed3ccb0246a1600bf
-  sentry_flutter: 91ebe7757a166b34ff432a0d550d22cd010d44d2
   share_plus: 76dd39142738f7a68dd57b05093b5e8193f220f7
   shared_preferences_macos: a64dc611287ed6cbe28fd1297898db1336975727
   sqflite: a5789cceda41d54d23f31d6de539d65bb14100ea
