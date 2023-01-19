@@ -20,10 +20,7 @@ import 'boorus/danbooru/router.dart';
 class App extends StatefulWidget {
   const App({
     super.key,
-    required this.settings,
   });
-
-  final Settings settings;
 
   @override
   State<App> createState() => _AppState();
@@ -76,11 +73,6 @@ class _AppState extends State<App> {
             debugShowCheckedModeBanner: false,
             onGenerateRoute: AppRouter.router.generator,
             title: context.read<AppInfoProvider>().appInfo.appName,
-            navigatorObservers: isAnalyticsEnabled(widget.settings)
-                ? [
-                    getAnalyticsObserver(),
-                  ]
-                : [],
           );
         },
       ),

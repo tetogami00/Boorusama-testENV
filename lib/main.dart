@@ -58,7 +58,6 @@ import 'package:boorusama/core/domain/autocompletes/autocompletes.dart';
 import 'package:boorusama/core/domain/posts/post_preloader.dart';
 import 'package:boorusama/core/domain/settings/setting_repository.dart';
 import 'package:boorusama/core/domain/tags/favorite_tag_repository.dart';
-import 'package:boorusama/core/error.dart';
 import 'package:boorusama/core/infra/caching/lru_cacher.dart';
 import 'package:boorusama/core/infra/infra.dart';
 import 'package:boorusama/core/infra/repositories/favorite_tag_hive_object.dart';
@@ -197,7 +196,6 @@ void main() async {
   );
 
   await ensureI18nInitialized();
-  initializeErrorHandlers(settings);
 
   void run() {
     runApp(
@@ -525,7 +523,7 @@ void main() async {
                             },
                           ),
                         ],
-                        child: App(settings: settings),
+                        child: const App(),
                       ),
                     ),
                   );
