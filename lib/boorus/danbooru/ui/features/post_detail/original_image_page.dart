@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:photo_view/photo_view.dart';
 
 // Project imports:
-import 'package:boorusama/core/application/application.dart';
 import 'package:boorusama/core/core.dart';
 import 'package:boorusama/core/domain/posts/post.dart';
+import 'package:boorusama/core/domain/user_agent_generator.dart';
 import 'package:boorusama/core/mobile.dart';
 import 'package:boorusama/core/ui/widgets/shadow_gradient_overlay.dart';
 
@@ -40,7 +41,6 @@ class _OriginalImagePageState extends State<OriginalImagePage> {
   @override
   void dispose() {
     super.dispose();
-    showSystemStatus();
 
     switch (widget.initialOrientation) {
       case Orientation.portrait:
@@ -59,7 +59,6 @@ class _OriginalImagePageState extends State<OriginalImagePage> {
         if (!zoom) {
           setState(() {
             overlay = !overlay;
-            setSystemActiveStatus(active: overlay);
           });
         }
       },
@@ -102,10 +101,10 @@ class _OriginalImagePageState extends State<OriginalImagePage> {
           children: [
             Positioned.fill(
               child: CachedNetworkImage(
-                httpHeaders: const {
-                  'User-Agent': userAgent,
+                httpHeaders: {
+                  'User-Agent': context.read<UserAgentGenerator>().generate(),
                 },
-                imageUrl: widget.post.fullImageUrl,
+                imageUrl: widget.post.originalImageUrl,
                 imageBuilder: (context, imageProvider) => Hero(
                   tag: '${widget.post.id}_hero',
                   child: PhotoView(
@@ -114,7 +113,6 @@ class _OriginalImagePageState extends State<OriginalImagePage> {
                         setState(() {
                           zoom = true;
                           overlay = false;
-                          setSystemActiveStatus(active: overlay);
                         });
                       } else {
                         setState(() => zoom = false);
@@ -130,14 +128,6 @@ class _OriginalImagePageState extends State<OriginalImagePage> {
                 ),
               ),
             ),
-            if (overlay)
-              ShadowGradientOverlay(
-                alignment: Alignment.bottomCenter,
-                colors: <Color>[
-                  const Color.fromARGB(60, 0, 0, 0),
-                  Colors.black12.withOpacity(0),
-                ],
-              ),
             if (overlay)
               ShadowGradientOverlay(
                 alignment: Alignment.topCenter,

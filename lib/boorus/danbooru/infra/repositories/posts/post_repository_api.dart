@@ -63,6 +63,8 @@ class PostRepositoryApi implements PostRepository {
         .then(parsePostWithOptions(includeInvalid: includeInvalid ?? false))
         .catchError((e) {
       handleError(e);
+
+      return <Post>[];
     });
   }
 
@@ -99,9 +101,9 @@ Post postDtoToPost(PostDto dto) {
 
     return Post(
       id: dto.id!,
-      previewImageUrl: dto.previewFileUrl ?? '',
-      normalImageUrl: dto.largeFileUrl ?? '',
-      fullImageUrl: dto.fileUrl ?? '',
+      thumbnailImageUrl: dto.previewFileUrl ?? '',
+      sampleImageUrl: dto.largeFileUrl ?? '',
+      originalImageUrl: dto.fileUrl ?? '',
       copyrightTags: splitTag(dto.copyrightTags),
       characterTags: splitTag(dto.characterTags),
       artistTags: splitTag(dto.artistTags),

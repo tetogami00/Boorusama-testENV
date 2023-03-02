@@ -15,6 +15,8 @@ import 'package:boorusama/core/ui/platforms/windows/windows.dart';
 import 'package:boorusama/core/ui/widgets/conditional_parent_widget.dart';
 import 'boorus/danbooru/router.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 class App extends StatefulWidget {
   const App({
     super.key,
@@ -80,10 +82,10 @@ class _AppState extends State<App> {
 
 class AppScrollBehavior extends ScrollBehavior {
   @override
-  Widget buildViewportChrome(
+  Widget buildScrollbar(
     BuildContext context,
     Widget child,
-    AxisDirection axisDirection,
+    ScrollableDetails details,
   ) =>
       child;
 }
