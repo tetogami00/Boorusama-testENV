@@ -2,27 +2,35 @@
 import 'package:dio/dio.dart';
 
 // Project imports:
-import 'package:boorusama/api/api.dart';
-import 'package:boorusama/boorus/danbooru/domain/accounts/accounts.dart';
-import 'package:boorusama/boorus/danbooru/domain/artists/artists.dart';
+import 'package:boorusama/api/danbooru.dart';
+import 'package:boorusama/boorus/danbooru/domain/artists.dart';
 import 'package:boorusama/boorus/danbooru/infra/dtos/dtos.dart';
+import 'package:boorusama/core/domain/boorus.dart';
+import 'package:boorusama/core/infra/cache_mixin.dart';
 
-class ArtistCommentaryRepositoryApi implements ArtistCommentaryRepository {
-  ArtistCommentaryRepositoryApi(this._api, this._accountRepository);
-  final Api _api;
-  final AccountRepository _accountRepository;
+class ArtistCommentaryRepositoryApi
+    with CacheMixin<ArtistCommentary>
+    implements ArtistCommentaryRepository {
+  ArtistCommentaryRepositoryApi(this._api, this.booruConfig);
+  final DanbooruApi _api;
+  final BooruConfig booruConfig;
+
+  @override
+  int get maxCapacity => 100;
+  @override
+  Duration get staleDuration => const Duration(minutes: 15);
 
   @override
   Future<ArtistCommentary> getCommentary(
     int postId, {
     CancelToken? cancelToken,
   }) async {
-    final account = await _accountRepository.get();
+    if (exist('$postId')) return Future.value(get('$postId'));
 
     try {
       final value = await _api.getArtistCommentary(
-        account.username,
-        account.apiKey,
+        booruConfig.login,
+        booruConfig.apiKey,
         postId,
         cancelToken: cancelToken,
       );
@@ -38,7 +46,7 @@ class ArtistCommentaryRepositoryApi implements ArtistCommentaryRepository {
         }
       }
 
-      return commentaries.isNotEmpty
+      final ac = commentaries.isNotEmpty
           ? commentaries.first.toEntity()
           : ArtistCommentaryDto(
               createdAt: DateTime.now(),
@@ -46,6 +54,9 @@ class ArtistCommentaryRepositoryApi implements ArtistCommentaryRepository {
               postId: -1,
               updatedAt: DateTime.now(),
             ).toEntity();
+
+      set('$postId', ac);
+      return ac;
     } on DioError catch (e, stackTrace) {
       if (e.type == DioErrorType.cancel) {
         // Cancel token triggered, skip this request

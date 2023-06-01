@@ -22,6 +22,7 @@ class RouterPageConstant {
   static const settingsInformation = 'settings/information';
 
   static const blacklistedTags = 'blacklisted_tags';
+  static const globalBlacklistedTags = 'global_blacklisted_tags';
   static const blacklistedSearch = 'blacklisted_tags/search';
 
   static const comment = 'comment';
@@ -33,6 +34,7 @@ class RouterPageConstant {
   static const savedSearchCreate = 'saved_search/create';
   static const savedSearchPatch = 'saved_search/patch';
 
+  static const user = 'user/details';
   static const profile = 'profile';
   static const favorties = 'favorites';
   static const favoriteGroups = 'favorite_groups';

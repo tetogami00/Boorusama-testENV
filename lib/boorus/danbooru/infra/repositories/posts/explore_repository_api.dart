@@ -1,25 +1,39 @@
-// Project imports:
-import 'package:boorusama/api/danbooru/danbooru.dart';
-import 'package:boorusama/boorus/danbooru/domain/accounts/accounts.dart';
-import 'package:boorusama/boorus/danbooru/domain/posts/posts.dart';
-import 'package:boorusama/boorus/danbooru/infra/repositories/handle_error.dart';
-import 'post_repository_api.dart';
+// Package imports:
+import 'package:collection/collection.dart';
 
-class ExploreRepositoryApi implements ExploreRepository {
+// Project imports:
+import 'package:boorusama/api/danbooru.dart';
+import 'package:boorusama/boorus/danbooru/domain/posts.dart';
+import 'package:boorusama/boorus/danbooru/infra/repositories/posts/common.dart';
+import 'package:boorusama/core/application/posts.dart';
+import 'package:boorusama/core/domain/blacklists/blacklisted_tag_repository.dart';
+import 'package:boorusama/core/domain/boorus.dart';
+import 'package:boorusama/core/domain/settings.dart';
+import 'package:boorusama/core/infra/networks.dart';
+
+class ExploreRepositoryApi
+    with SettingsRepositoryMixin, GlobalBlacklistedTagFilterMixin
+    implements ExploreRepository {
   const ExploreRepositoryApi({
     required this.api,
-    required this.accountRepository,
+    required this.booruConfig,
     required this.postRepository,
+    required this.settingsRepository,
+    required this.blacklistedTagRepository,
+    this.shouldFilter,
   });
 
-  final AccountRepository accountRepository;
-  final PostRepository postRepository;
-  final Api api;
-
-  static const int _limit = 60;
+  final BooruConfig booruConfig;
+  final DanbooruPostRepository postRepository;
+  final DanbooruApi api;
+  @override
+  final SettingsRepository settingsRepository;
+  @override
+  final GlobalBlacklistedTagRepository blacklistedTagRepository;
+  final bool Function(DanbooruPost post)? shouldFilter;
 
   @override
-  Future<List<Post>> getHotPosts(
+  DanbooruPostsOrError getHotPosts(
     int page, {
     int? limit,
   }) =>
@@ -30,50 +44,41 @@ class ExploreRepositoryApi implements ExploreRepository {
       );
 
   @override
-  Future<List<Post>> getMostViewedPosts(
+  DanbooruPostsOrError getMostViewedPosts(
     DateTime date,
   ) =>
-      accountRepository
-          .get()
-          .then(
-            (account) => api.getMostViewedPosts(
-              account.username,
-              account.apiKey,
-              '${date.year}-${date.month}-${date.day}',
-              postParams,
-            ),
-          )
-          .then(parsePost)
-          .catchError((e) {
-        handleError(e);
-
-        return <Post>[];
-      });
+      tryParseResponse(
+        fetcher: () => api.getMostViewedPosts(
+          booruConfig.login,
+          booruConfig.apiKey,
+          '${date.year}-${date.month}-${date.day}',
+        ),
+      )
+          .flatMap(tryParseData)
+          .flatMap(tryFilterBlacklistedTags)
+          // filter when filerFn is provided
+          .map((posts) => shouldFilter != null
+              ? posts.whereNot(shouldFilter!).toList()
+              : posts.toList());
 
   @override
-  Future<List<Post>> getPopularPosts(
+  DanbooruPostsOrError getPopularPosts(
     DateTime date,
     int page,
     TimeScale scale, {
     int? limit,
   }) =>
-      accountRepository
-          .get()
-          .then(
-            (account) => api.getPopularPosts(
-              account.username,
-              account.apiKey,
+      tryParseResponse(
+        fetcher: () => getPostsPerPage().then((lim) => api.getPopularPosts(
+              booruConfig.login,
+              booruConfig.apiKey,
               '${date.year}-${date.month}-${date.day}',
               scale.toString().split('.').last,
               page,
-              postParams,
-              limit ?? _limit,
-            ),
-          )
-          .then(parsePost)
-          .catchError((e) {
-        handleError(e);
-
-        return <Post>[];
-      });
+              limit ?? lim,
+            )),
+      ).flatMap(tryParseData).flatMap(tryFilterBlacklistedTags).map((posts) =>
+          shouldFilter != null
+              ? posts.whereNot(shouldFilter!).toList()
+              : posts.toList());
 }

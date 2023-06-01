@@ -3,12 +3,12 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/dio.dart';
 
 // Project imports:
-import 'package:boorusama/api/api.dart';
-import 'package:boorusama/boorus/danbooru/domain/accounts/accounts.dart';
-import 'package:boorusama/boorus/danbooru/domain/comments/comments.dart';
-import 'package:boorusama/boorus/danbooru/domain/users/users.dart';
+import 'package:boorusama/api/danbooru.dart';
+import 'package:boorusama/boorus/danbooru/domain/comments.dart';
+import 'package:boorusama/boorus/danbooru/domain/users.dart';
 import 'package:boorusama/boorus/danbooru/infra/dtos/dtos.dart';
 import 'package:boorusama/boorus/danbooru/infra/repositories/users/users.dart';
+import 'package:boorusama/core/domain/boorus.dart';
 import 'package:boorusama/core/infra/http_parser.dart';
 
 const String commentResourceApiParam =
@@ -21,13 +21,12 @@ List<Comment> parseComment(HttpResponse<dynamic> value) => parse(
 
 class CommentRepositoryApi implements CommentRepository {
   CommentRepositoryApi(
-    Api api,
-    AccountRepository accountRepository,
-  )   : _api = api,
-        _accountRepository = accountRepository;
+    DanbooruApi api,
+    this.booruConfig,
+  ) : _api = api;
 
-  final Api _api;
-  final AccountRepository _accountRepository;
+  final DanbooruApi _api;
+  final BooruConfig booruConfig;
 
   @override
   Future<List<Comment>> getCommentsFromPostId(
@@ -47,39 +46,35 @@ class CommentRepositoryApi implements CommentRepository {
       });
 
   @override
-  Future<bool> postComment(int postId, String content) => _accountRepository
-      .get()
-      .then((account) => _api.postComment(
-            account.username,
-            account.apiKey,
-            postId,
-            content,
-            true,
-          ))
+  Future<bool> postComment(int postId, String content) => _api
+      .postComment(
+        booruConfig.login,
+        booruConfig.apiKey,
+        postId,
+        content,
+        true,
+      )
       .then((_) => true)
       .catchError((Object obj) => false);
 
   @override
-  Future<bool> updateComment(int commentId, String content) =>
-      _accountRepository
-          .get()
-          .then((account) => _api.updateComment(
-                account.username,
-                account.apiKey,
-                commentId,
-                content,
-              ))
-          .then((_) => true)
-          .catchError((Object obj) => false);
+  Future<bool> updateComment(int commentId, String content) => _api
+      .updateComment(
+        booruConfig.login,
+        booruConfig.apiKey,
+        commentId,
+        content,
+      )
+      .then((_) => true)
+      .catchError((Object obj) => false);
 
   @override
-  Future<bool> deleteComment(int commentId) => _accountRepository
-      .get()
-      .then((account) => _api.deleteComment(
-            account.username,
-            account.apiKey,
-            commentId,
-          ))
+  Future<bool> deleteComment(int commentId) => _api
+      .deleteComment(
+        booruConfig.login,
+        booruConfig.apiKey,
+        commentId,
+      )
       .then((_) => true)
       .catchError((Object obj) => false);
 }
@@ -93,7 +88,6 @@ Comment commentDtoToComment(CommentDto d) {
     createdAt: d.createdAt ?? DateTime.now(),
     updatedAt: d.updatedAt ?? DateTime.now(),
     isDeleted: d.isDeleted ?? false,
-    creator:
-        d.creator == null ? User.placeholder() : userDtoToUser(d.creator!, []),
+    creator: d.creator == null ? User.placeholder() : userDtoToUser(d.creator!),
   );
 }

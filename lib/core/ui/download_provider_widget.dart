@@ -2,41 +2,52 @@
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 // Project imports:
-import 'package:boorusama/boorus/danbooru/domain/posts/posts.dart';
-import 'package:boorusama/core/application/device_storage_permission/device_storage_permission_bloc.dart';
-import 'package:boorusama/core/application/download/download_service.dart';
-import 'package:boorusama/core/core.dart';
+import 'package:boorusama/core/application/downloads.dart';
+import 'package:boorusama/core/application/permissions.dart';
+import 'package:boorusama/core/domain/posts.dart';
+import 'package:boorusama/core/domain/settings/settings.dart';
+import 'package:boorusama/core/platform.dart';
+import 'package:boorusama/core/provider.dart';
 
-void _download(
+Future<void> _download(
   BuildContext context,
+  WidgetRef ref,
   Post downloadable, {
   PermissionStatus? permission,
-}) {
-  final service = context.read<DownloadService>();
-  void download() => service.download(downloadable);
+  required Settings settings,
+}) async {
+  final service = ref.read(downloadServiceProvider);
+  final fileNameGenerator = ref.read(downloadFileNameGeneratorProvider);
+  final downloadUrl = ref.read(downloadUrlProvider(downloadable));
+
+  Future<void> download() async => service
+      .downloadWithSettings(
+        settings,
+        url: downloadUrl,
+        fileNameBuilder: () => fileNameGenerator.generateFor(
+          downloadable,
+          downloadUrl,
+        ),
+      )
+      .run();
 
   // Platform doesn't require permissions, just download it right away
   if (permission == null) {
     download();
-
-    return;
   }
 
   if (permission == PermissionStatus.granted) {
     download();
   } else {
-    context
-        .read<DeviceStoragePermissionBloc>()
-        .add(DeviceStoragePermissionRequested(
+    ref.read(deviceStoragePermissionProvider.notifier).requestPermission(
       onDone: (isGranted) {
         if (isGranted) download();
       },
-    ));
+    );
   }
 }
 
@@ -44,7 +55,7 @@ typedef DownloadDelegate = void Function(
   Post downloadable,
 );
 
-class DownloadProviderWidget extends StatelessWidget {
+class DownloadProviderWidget extends ConsumerWidget {
   const DownloadProviderWidget({
     super.key,
     required this.builder,
@@ -56,46 +67,18 @@ class DownloadProviderWidget extends StatelessWidget {
   ) builder;
 
   @override
-  Widget build(BuildContext context) {
-    return isAndroid() || isIOS()
-        ? BlocConsumer<DeviceStoragePermissionBloc,
-            DeviceStoragePermissionState>(
-            listener: (context, state) {
-              if (state.storagePermission ==
-                      PermissionStatus.permanentlyDenied &&
-                  !state.isNotificationRead) {
-                showSimpleSnackBar(
-                  context: context,
-                  action: SnackBarAction(
-                    label: 'download.open_app_settings'.tr(),
-                    onPressed: openAppSettings,
-                  ),
-                  behavior: SnackBarBehavior.fixed,
-                  content: const Text('download.storage_permission_explanation')
-                      .tr(),
-                );
-                context.read<DeviceStoragePermissionBloc>().add(
-                      const DeviceStorageNotificationDisplayStatusChanged(
-                        isDisplay: true,
-                      ),
-                    );
-              }
-            },
-            builder: (context, state) => builder(
-              context,
-              (downloadable) => _download(
-                context,
-                downloadable,
-                permission: state.storagePermission,
-              ),
-            ),
-          )
-        : builder(
-            context,
-            (downloadable) => _download(
-              context,
-              downloadable,
-            ),
-          );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(deviceStoragePermissionProvider);
+
+    return builder(
+      context,
+      (downloadable) => _download(
+        context,
+        ref,
+        downloadable,
+        permission: isAndroid() || isIOS() ? state.storagePermission : null,
+        settings: ref.read(settingsProvider),
+      ),
+    );
   }
 }

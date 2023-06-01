@@ -3,10 +3,10 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/dio.dart';
 
 // Project imports:
-import 'package:boorusama/api/api.dart';
-import 'package:boorusama/boorus/danbooru/domain/accounts/accounts.dart';
-import 'package:boorusama/boorus/danbooru/domain/favorites/favorites.dart';
+import 'package:boorusama/api/danbooru.dart';
+import 'package:boorusama/boorus/danbooru/domain/favorites.dart';
 import 'package:boorusama/boorus/danbooru/infra/dtos/dtos.dart';
+import 'package:boorusama/core/domain/boorus.dart';
 import 'package:boorusama/core/infra/http_parser.dart';
 
 List<Favorite> parseFavorite(HttpResponse<dynamic> value) => parse(
@@ -17,25 +17,21 @@ List<Favorite> parseFavorite(HttpResponse<dynamic> value) => parse(
 class FavoritePostRepositoryApi implements FavoritePostRepository {
   FavoritePostRepositoryApi(
     this._api,
-    this._accountRepository,
+    this.booruConfig,
   );
 
-  final Api _api;
-  final AccountRepository _accountRepository;
+  final DanbooruApi _api;
+  final BooruConfig booruConfig;
 
   @override
-  Future<bool> addToFavorites(int postId) => _accountRepository
-          .get()
-          .then(
-            (account) => _api.addToFavorites(
-              account.username,
-              account.apiKey,
-              postId,
-            ),
+  Future<bool> addToFavorites(int postId) => _api
+          .addToFavorites(
+            booruConfig.login,
+            booruConfig.apiKey,
+            postId,
           )
-          .then((value) {
-        return true;
-      }).catchError((Object obj) {
+          .then((value) => true)
+          .catchError((Object obj) {
         switch (obj.runtimeType) {
           case DioError:
             final response = (obj as DioError).response;
@@ -47,30 +43,23 @@ class FavoritePostRepositoryApi implements FavoritePostRepository {
       });
 
   @override
-  Future<bool> removeFromFavorites(int postId) async {
-    return _accountRepository
-        .get()
-        .then(
-          (account) => _api.removeFromFavorites(
+  Future<bool> removeFromFavorites(int postId) => _api
+          .removeFromFavorites(
             postId,
-            account.username,
-            account.apiKey,
-            'delete',
-          ),
-        )
-        .then((value) {
-      return true;
-    }).catchError((Object obj) {
-      switch (obj.runtimeType) {
-        case DioError:
-          final response = (obj as DioError).response;
-          if (response == null) return false;
-          return response.statusCode == 302;
-        default:
-          return false;
-      }
-    });
-  }
+            booruConfig.login,
+            booruConfig.apiKey,
+          )
+          .then((value) => true)
+          .catchError((Object obj) {
+        switch (obj.runtimeType) {
+          case DioError:
+            final response = (obj as DioError).response;
+            if (response == null) return false;
+            return response.statusCode == 302;
+          default:
+            return false;
+        }
+      });
 
   @override
   Future<List<Favorite>> filterFavoritesFromUserId(
@@ -78,16 +67,13 @@ class FavoritePostRepositoryApi implements FavoritePostRepository {
     int userId,
     int limit,
   ) =>
-      _accountRepository
-          .get()
-          .then(
-            (account) => _api.filterFavoritesFromUserId(
-              account.username,
-              account.apiKey,
-              postIds.join(','),
-              userId,
-              limit,
-            ),
+      _api
+          .filterFavoritesFromUserId(
+            booruConfig.login,
+            booruConfig.apiKey,
+            postIds.join(','),
+            userId,
+            limit,
           )
           .then(parseFavorite)
           .catchError((Object obj) => <Favorite>[]);
@@ -97,16 +83,13 @@ class FavoritePostRepositoryApi implements FavoritePostRepository {
     int userId,
     int postId,
   ) =>
-      _accountRepository
-          .get()
-          .then(
-            (account) => _api.filterFavoritesFromUserId(
-              account.username,
-              account.apiKey,
-              postId.toString(),
-              userId,
-              20,
-            ),
+      _api
+          .filterFavoritesFromUserId(
+            booruConfig.login,
+            booruConfig.apiKey,
+            postId.toString(),
+            userId,
+            20,
           )
           .then((value) => (value.response.data as List).isNotEmpty)
           .catchError((Object obj) => false);

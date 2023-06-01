@@ -3,9 +3,9 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/dio.dart';
 
 // Project imports:
-import 'package:boorusama/api/api.dart';
-import 'package:boorusama/boorus/danbooru/domain/accounts/accounts.dart';
-import 'package:boorusama/boorus/danbooru/domain/tags/tags.dart';
+import 'package:boorusama/api/danbooru.dart';
+import 'package:boorusama/boorus/danbooru/domain/tags.dart';
+import 'package:boorusama/core/domain/boorus.dart';
 import 'package:boorusama/core/infra/http_parser.dart';
 
 List<Search> parseSearch(HttpResponse<dynamic> value) => parse(
@@ -18,27 +18,33 @@ List<Search> parseSearch(HttpResponse<dynamic> value) => parse(
 
 class PopularSearchRepositoryApi implements PopularSearchRepository {
   PopularSearchRepositoryApi({
-    required AccountRepository accountRepository,
-    required Api api,
-  })  : _accountRepository = accountRepository,
-        _api = api;
+    required this.booruConfig,
+    required DanbooruApi api,
+  }) : _api = api;
 
-  final AccountRepository _accountRepository;
-  final Api _api;
+  final BooruConfig booruConfig;
+  final DanbooruApi _api;
+  final _cache = <String, List<Search>>{};
+
+  String _getKeyFromDateTime(DateTime date) =>
+      '${date.year}-${date.month}-${date.day}';
 
   @override
   Future<List<Search>> getSearchByDate(DateTime date) async {
+    final key = _getKeyFromDateTime(date);
+    if (_cache.containsKey(key)) {
+      return _cache[key]!;
+    }
     try {
-      return _accountRepository
-          .get()
-          .then(
-            (account) => _api.getPopularSearchByDate(
-              account.username,
-              account.apiKey,
-              '${date.year}-${date.month}-${date.day}',
-            ),
+      final result = await _api
+          .getPopularSearchByDate(
+            booruConfig.login,
+            booruConfig.apiKey,
+            '${date.year}-${date.month}-${date.day}',
           )
           .then(parseSearch);
+      _cache[key] = result;
+      return result;
     } on DioError catch (e, stackTrace) {
       if (e.type == DioErrorType.cancel) {
         // Cancel token triggered, skip this request

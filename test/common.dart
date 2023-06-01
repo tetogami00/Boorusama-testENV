@@ -2,26 +2,22 @@
 import 'package:mocktail/mocktail.dart';
 
 // Project imports:
-import 'package:boorusama/boorus/danbooru/domain/accounts/accounts.dart';
-import 'package:boorusama/boorus/danbooru/domain/users/users.dart';
+import 'package:boorusama/boorus/danbooru/domain/users.dart';
+import 'package:boorusama/core/application/booru_user_identity_provider.dart';
 
-class MockAccountRepo extends Mock implements AccountRepository {}
-
-AccountRepository mockAccountRepo({
-  Account? account,
-}) {
-  final repo = MockAccountRepo();
-  when(() => repo.get()).thenAnswer((_) async => account ?? Account.empty);
-
-  return repo;
-}
-
-AccountRepository emptyAccountRepo() => mockAccountRepo();
-AccountRepository fakeAccountRepo() => mockAccountRepo(
-      account: Account.create('foo', 'bar', 0),
-    );
+class MockBooruUserIdentityProvider extends Mock
+    implements BooruUserIdentityProvider {}
 
 class MockUserRepo extends Mock implements UserRepository {}
+
+BooruUserIdentityProvider createIdentityProvider() {
+  final mock = MockBooruUserIdentityProvider();
+
+  when(() => mock.getAccountIdFromConfig(any()))
+      .thenAnswer((invocation) async => 1);
+
+  return mock;
+}
 
 UserRepository mockUserRepo(List<String> tags) {
   final repo = MockUserRepo();
@@ -30,12 +26,24 @@ UserRepository mockUserRepo(List<String> tags) {
       id: 0,
       level: UserLevel.member,
       name: 'User',
-      blacklistedTags: tags,
+      joinedDate: DateTime(1),
+      uploadCount: 0,
+      tagEditCount: 0,
+      noteEditCount: 0,
+      commentCount: 0,
+      forumPostCount: 0,
+      favoriteGroupCount: 0,
     ),
   );
 
-  when(() => repo.setUserBlacklistedTags(any(), any()))
-      .thenAnswer((_) async => true);
+  when(() => repo.getUserSelfById(any())).thenAnswer(
+    (_) async => UserSelf(
+      id: 0,
+      level: UserLevel.member,
+      name: 'User',
+      blacklistedTags: tags,
+    ),
+  );
 
   return repo;
 }

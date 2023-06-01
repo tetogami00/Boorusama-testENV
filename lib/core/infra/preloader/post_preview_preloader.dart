@@ -1,9 +1,11 @@
+// Dart imports:
+import 'dart:io';
+
 // Package imports:
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 // Project imports:
-import 'package:boorusama/core/domain/posts/post.dart';
-import 'package:boorusama/core/domain/posts/post_preloader.dart';
+import 'package:boorusama/core/domain/posts.dart';
 
 class PostPreviewPreloaderImp implements PostPreviewPreloader {
   PostPreviewPreloaderImp(
@@ -16,9 +18,20 @@ class PostPreviewPreloaderImp implements PostPreviewPreloader {
 
   @override
   Future<void> preload(Post post) {
-    return cache.downloadFile(
-      post.thumbnailImageUrl,
-      authHeaders: httpHeaders,
-    );
+    if (post.thumbnailImageUrl.isEmpty) return Future.value();
+
+    try {
+      return cache.downloadFile(
+        post.thumbnailImageUrl,
+        authHeaders: httpHeaders,
+      );
+    } catch (e) {
+      if (e is SocketException) {
+        // Do nothing
+        return Future.value();
+      } else {
+        rethrow;
+      }
+    }
   }
 }

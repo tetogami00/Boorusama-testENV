@@ -2,10 +2,10 @@
 import 'package:retrofit/dio.dart';
 
 // Project imports:
-import 'package:boorusama/api/danbooru/danbooru.dart';
-import 'package:boorusama/boorus/danbooru/domain/accounts/accounts.dart';
-import 'package:boorusama/boorus/danbooru/domain/saved_searches/saved_searches.dart';
+import 'package:boorusama/api/danbooru.dart';
+import 'package:boorusama/boorus/danbooru/domain/saved_searches.dart';
 import 'package:boorusama/boorus/danbooru/infra/dtos/dtos.dart';
+import 'package:boorusama/core/domain/boorus.dart';
 import 'package:boorusama/core/infra/infra.dart';
 
 List<SavedSearch> parseSavedSearch(HttpResponse<dynamic> value) => parse(
@@ -16,25 +16,24 @@ List<SavedSearch> parseSavedSearch(HttpResponse<dynamic> value) => parse(
 class SavedSearchRepositoryApi implements SavedSearchRepository {
   const SavedSearchRepositoryApi(
     this.api,
-    this.accountRepository,
+    this.booruConfig,
   );
 
-  final Api api;
-  final AccountRepository accountRepository;
+  final DanbooruApi api;
+  final BooruConfig booruConfig;
 
   @override
   Future<List<SavedSearch>> getSavedSearches({
     required int page,
   }) =>
-      accountRepository
-          .get()
-          .then((account) => api.getSavedSearches(
-                account.username,
-                account.apiKey,
-                page,
-                //TODO: shouldn't hardcode it
-                1000,
-              ))
+      api
+          .getSavedSearches(
+            booruConfig.login,
+            booruConfig.apiKey,
+            page,
+            //TODO: shouldn't hardcode it
+            1000,
+          )
           .then(parseSavedSearch);
 
   @override
@@ -42,19 +41,16 @@ class SavedSearchRepositoryApi implements SavedSearchRepository {
     required String query,
     String? label,
   }) =>
-      accountRepository
-          .get()
-          .then((account) => api.postSavedSearch(
-                account.username,
-                account.apiKey,
-                {
-                  'saved_search[query]': query,
-                  'saved_search[label_string]': label ?? '',
-                },
-              ))
-          .then((value) => value.response.statusCode == 201
-              ? _parseSingleSavedSearch(value)
-              : null);
+      api.postSavedSearch(
+        booruConfig.login,
+        booruConfig.apiKey,
+        {
+          'saved_search[query]': query,
+          'saved_search[label_string]': label ?? '',
+        },
+      ).then((value) => value.response.statusCode == 201
+          ? _parseSingleSavedSearch(value)
+          : null);
 
   @override
   Future<bool> updateSavedSearch(
@@ -73,25 +69,23 @@ class SavedSearchRepositoryApi implements SavedSearchRepository {
       map['saved_search[label_string]'] = label;
     }
 
-    return accountRepository
-        .get()
-        .then((account) => api.patchSavedSearch(
-              account.username,
-              account.apiKey,
-              id,
-              map,
-            ))
+    return api
+        .patchSavedSearch(
+          booruConfig.login,
+          booruConfig.apiKey,
+          id,
+          map,
+        )
         .then((value) => value.response.statusCode == 204);
   }
 
   @override
-  Future<bool> deleteSavedSearch(int id) => accountRepository
-      .get()
-      .then((account) => api.deleteSavedSearch(
-            account.username,
-            account.apiKey,
-            id,
-          ))
+  Future<bool> deleteSavedSearch(int id) => api
+      .deleteSavedSearch(
+        booruConfig.login,
+        booruConfig.apiKey,
+        id,
+      )
       .then((value) => value.response.statusCode == 204);
 }
 

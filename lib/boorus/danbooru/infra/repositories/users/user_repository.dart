@@ -3,30 +3,38 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/dio.dart';
 
 // Project imports:
-import 'package:boorusama/api/api.dart';
-import 'package:boorusama/boorus/danbooru/domain/accounts/accounts.dart';
-import 'package:boorusama/boorus/danbooru/domain/users/users.dart';
+import 'package:boorusama/api/danbooru.dart';
+import 'package:boorusama/boorus/danbooru/domain/users.dart';
 import 'package:boorusama/boorus/danbooru/infra/dtos/dtos.dart';
+import 'package:boorusama/core/domain/boorus.dart';
 import 'package:boorusama/core/infra/http_parser.dart';
 
 List<User> parseUser(
+  HttpResponse<dynamic> value,
+) =>
+    parse(
+      value: value,
+      converter: (item) => UserDto.fromJson(item),
+    ).map((u) => userDtoToUser(u)).toList();
+
+List<UserSelf> parseUserSelf(
   HttpResponse<dynamic> value,
   List<String> defaultBlacklistedTags,
 ) =>
     parse(
       value: value,
-      converter: (item) => UserDto.fromJson(item),
-    ).map((u) => userDtoToUser(u, defaultBlacklistedTags)).toList();
+      converter: (item) => UserSelfDto.fromJson(item),
+    ).map((u) => userDtoToUserSelf(u, defaultBlacklistedTags)).toList();
 
 class UserRepositoryApi implements UserRepository {
   UserRepositoryApi(
     this._api,
-    this._accountRepository,
+    this.booruConfig,
     this.defaultBlacklistedTags,
   );
 
-  final AccountRepository _accountRepository;
-  final Api _api;
+  final BooruConfig booruConfig;
+  final DanbooruApi _api;
   final List<String> defaultBlacklistedTags;
 
   @override
@@ -41,7 +49,7 @@ class UserRepositoryApi implements UserRepository {
             1000,
             cancelToken: cancelToken,
           )
-          .then((u) => parseUser(u, defaultBlacklistedTags));
+          .then((u) => parseUser(u));
     } on DioError catch (e, stackTrace) {
       if (e.type == DioErrorType.cancel) {
         // Cancel token triggered, skip this request
@@ -56,41 +64,61 @@ class UserRepositoryApi implements UserRepository {
   }
 
   @override
-  Future<User> getUserById(int id) => _accountRepository
-      .get()
-      .then(
-        (account) => _api.getUserById(
-          account.username,
-          account.apiKey,
-          id,
-        ),
+  Future<User> getUserById(int id) => _api
+      .getUserById(
+        booruConfig.login,
+        booruConfig.apiKey,
+        id,
       )
       .then((value) => Map<String, dynamic>.from(value.response.data))
       .then((e) => UserDto.fromJson(e))
-      .then((d) => userDtoToUser(d, defaultBlacklistedTags));
+      .then((d) => userDtoToUser(d));
 
   @override
-  Future<void> setUserBlacklistedTags(int id, String blacklistedTags) =>
-      _accountRepository.get().then(
-            (account) => _api.setBlacklistedTags(
-              account.username,
-              account.apiKey,
-              id,
-              blacklistedTags,
-            ),
-          );
+  Future<UserSelf?> getUserSelfById(int id) => _api
+      .getUserById(
+        booruConfig.login,
+        booruConfig.apiKey,
+        id,
+      )
+      .then((value) => Map<String, dynamic>.from(value.response.data))
+      .then((e) => UserSelfDto.fromJson(e))
+      .then((d) => userDtoToUserSelf(d, defaultBlacklistedTags));
 }
 
 User userDtoToUser(
   UserDto d,
-  List<String> defaultBlacklistedTags,
 ) {
   try {
     return User(
       id: d.id!,
       level: intToUserLevel(d.level!),
       name: d.name!,
-      //TODO: need to find a way to distinguish between other user and current user.
+      joinedDate: d.createdAt!,
+      uploadCount: d.uploadCount ?? 0,
+      tagEditCount: d.tagEditCount ?? 0,
+      noteEditCount: d.noteEditCount ?? 0,
+      commentCount: d.commentCount ?? 0,
+      forumPostCount: d.forumPostCount ?? 0,
+      favoriteGroupCount: d.favoriteGroupCount ?? 0,
+    );
+  } catch (e, stackTrace) {
+    Error.throwWithStackTrace(
+      Exception('fail to parse one of the required field\n $e'),
+      stackTrace,
+    );
+  }
+}
+
+UserSelf userDtoToUserSelf(
+  UserSelfDto d,
+  List<String> defaultBlacklistedTags,
+) {
+  try {
+    return UserSelf(
+      id: d.id!,
+      level: intToUserLevel(d.level!),
+      name: d.name!,
       blacklistedTags: d.blacklistedTags == null
           ? defaultBlacklistedTags
           : tagStringToListTagString(d.blacklistedTags!),

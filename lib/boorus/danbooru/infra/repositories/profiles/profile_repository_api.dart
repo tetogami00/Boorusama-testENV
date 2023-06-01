@@ -3,20 +3,19 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/dio.dart';
 
 // Project imports:
-import 'package:boorusama/api/api.dart';
-import 'package:boorusama/boorus/danbooru/domain/accounts/accounts.dart';
-import 'package:boorusama/boorus/danbooru/domain/profiles/profiles.dart';
+import 'package:boorusama/api/danbooru.dart';
+import 'package:boorusama/boorus/danbooru/domain/profiles.dart';
 import 'package:boorusama/boorus/danbooru/infra/dtos/dtos.dart';
+import 'package:boorusama/core/domain/boorus.dart';
 
 class ProfileRepositoryApi implements ProfileRepository {
   ProfileRepositoryApi({
-    required AccountRepository accountRepository,
-    required Api api,
-  })  : _api = api,
-        _accountRepository = accountRepository;
+    required this.booruConfig,
+    required DanbooruApi api,
+  }) : _api = api;
 
-  final AccountRepository _accountRepository;
-  final Api _api;
+  final BooruConfig booruConfig;
+  final DanbooruApi _api;
 
   @override
   Future<Profile?> getProfile({
@@ -30,10 +29,9 @@ class ProfileRepositoryApi implements ProfileRepository {
         value =
             await _api.getProfile(username, apiKey, cancelToken: cancelToken);
       } else {
-        final account = await _accountRepository.get();
         value = await _api.getProfile(
-          account.username,
-          account.apiKey,
+          booruConfig.login,
+          booruConfig.apiKey,
           cancelToken: cancelToken,
         );
       }

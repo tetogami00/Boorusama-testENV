@@ -2,7 +2,7 @@
 import 'package:equatable/equatable.dart';
 
 // Project imports:
-import 'package:boorusama/boorus/danbooru/domain/users/user.dart';
+import 'package:boorusama/boorus/danbooru/domain/users.dart';
 import 'vote_state.dart';
 
 typedef PostVoteId = int;
@@ -24,7 +24,21 @@ class PostVote extends Equatable {
         userId: -1,
         createdAt: DateTime(1),
         updatedAt: DateTime(1),
-        score: 0,
+        score: -9999,
+        isDeleted: false,
+      );
+
+  factory PostVote.local({
+    required int postId,
+    required int score,
+  }) =>
+      PostVote(
+        id: -99,
+        postId: postId,
+        userId: -99,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        score: score,
         isDeleted: false,
       );
 
@@ -35,6 +49,23 @@ class PostVote extends Equatable {
   final DateTime updatedAt;
   final int score;
   final bool isDeleted;
+
+  @override
+  List<Object?> get props => [
+        id,
+        postId,
+        userId,
+        createdAt,
+        updatedAt,
+        score,
+        isDeleted,
+      ];
+}
+
+extension PostVoteX on PostVote {
+  VoteState get voteState => voteStateFromScore(score);
+  bool get isOptimisticUpdateVote =>
+      id == PostVote.local(postId: postId, score: score).id;
 
   PostVote copyWith({
     PostVoteId? id,
@@ -54,19 +85,4 @@ class PostVote extends Equatable {
         score: score ?? this.score,
         isDeleted: isDeleted ?? this.isDeleted,
       );
-
-  @override
-  List<Object?> get props => [
-        id,
-        postId,
-        userId,
-        createdAt,
-        updatedAt,
-        score,
-        isDeleted,
-      ];
-}
-
-extension PostVoteX on PostVote {
-  VoteState get voteState => voteStateFromScore(score);
 }

@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Project imports:
-import 'package:boorusama/core/domain/user_agent_generator.dart';
+import 'package:boorusama/core/provider.dart';
+import 'package:boorusama/core/ui/booru_image.dart';
 
-class BooruImageLegacy extends StatefulWidget {
+class BooruImageLegacy extends ConsumerWidget {
   const BooruImageLegacy({
     super.key,
     required this.imageUrl,
@@ -27,98 +28,62 @@ class BooruImageLegacy extends StatefulWidget {
   final int? cacheHeight;
 
   @override
-  State<BooruImageLegacy> createState() => _BooruImageLegacyState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (imageUrl.isEmpty) {
+      return ImagePlaceHolder(
+        width: cacheWidth,
+        height: cacheHeight,
+        borderRadius:
+            borderRadius ?? const BorderRadius.all(Radius.circular(4)),
+      );
+    }
 
-class _BooruImageLegacyState extends State<BooruImageLegacy> {
-  late Image myImage;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    precacheImage(myImage.image, context);
-  }
-
-  @override
-  void initState() {
-    myImage = Image(
-      image: CachedNetworkImageProvider(
-        widget.imageUrl,
-        headers: {
-          'User-Agent': context.read<UserAgentGenerator>().generate(),
-        },
-      ),
-    );
-    myImage.image
-        // ignore: use_named_constants
-        .resolve(const ImageConfiguration())
-        // ignore: no-empty-block
-        .addListener(ImageStreamListener((_, __) {}));
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CachedNetworkImage(
-      httpHeaders: {
-        'User-Agent': context.read<UserAgentGenerator>().generate(),
-      },
-      memCacheWidth: widget.cacheWidth,
-      memCacheHeight: widget.cacheHeight,
-      imageUrl: widget.imageUrl,
-      imageBuilder: (context, imageProvider) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: widget.borderRadius ??
-                const BorderRadius.all(Radius.circular(8)),
-            image: DecorationImage(
-              image: myImage.image,
-              fit: widget.fit ?? BoxFit.cover,
-            ),
-          ),
-        );
-      },
-      placeholder: (context, url) => widget.placeholderUrl != null
-          ? CachedNetworkImage(
-              httpHeaders: {
-                'User-Agent': context.read<UserAgentGenerator>().generate(),
-              },
-              imageUrl: widget.placeholderUrl!,
-              imageBuilder: (context, imageProvider) => Container(
-                decoration: BoxDecoration(
-                  borderRadius: widget.borderRadius ??
-                      const BorderRadius.all(Radius.circular(8)),
-                  image: DecorationImage(
-                    image: imageProvider,
-                    fit: widget.fit ?? BoxFit.cover,
-                  ),
-                ),
-              ),
-              placeholder: (context, url) => Container(
-                decoration: BoxDecoration(
-                  borderRadius: widget.borderRadius ??
-                      const BorderRadius.all(Radius.circular(8)),
-                  color: Theme.of(context).cardColor,
-                ),
-              ),
-            )
-          : Container(
-              decoration: BoxDecoration(
-                borderRadius: widget.borderRadius ??
-                    const BorderRadius.all(Radius.circular(8)),
-                color: Theme.of(context).cardColor,
-              ),
-            ),
-      errorWidget: (context, url, error) => Container(
-        decoration: BoxDecoration(
-          borderRadius:
-              widget.borderRadius ?? const BorderRadius.all(Radius.circular(8)),
-          color: Theme.of(context).cardColor,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius:
+            borderRadius ?? const BorderRadius.all(Radius.circular(4)),
+        border: Border.all(
+          color: Theme.of(context).dividerColor,
+          width: 1,
         ),
-        child: const Center(child: Icon(Icons.broken_image_rounded)),
       ),
-      fadeInDuration: const Duration(microseconds: 10),
-      fadeOutDuration: const Duration(microseconds: 500),
+      child: CachedNetworkImage(
+        httpHeaders: {
+          'User-Agent': ref.watch(userAgentGeneratorProvider).generate(),
+        },
+        width: cacheWidth?.toDouble(),
+        height: cacheHeight?.toDouble(),
+        imageUrl: imageUrl,
+        errorListener: (e) => {},
+        fit: fit ?? BoxFit.cover,
+        placeholder: (context, url) =>
+            placeholderUrl != null && placeholderUrl!.isNotEmpty
+                ? CachedNetworkImage(
+                    httpHeaders: {
+                      'User-Agent':
+                          ref.watch(userAgentGeneratorProvider).generate(),
+                    },
+                    errorListener: (e) => {},
+                    fadeInDuration: Duration.zero,
+                    fadeOutDuration: Duration.zero,
+                    imageUrl: placeholderUrl!,
+                    fit: fit ?? BoxFit.cover,
+                    placeholder: (context, url) => ImagePlaceHolder(
+                      borderRadius: borderRadius ??
+                          const BorderRadius.all(Radius.circular(8)),
+                    ),
+                  )
+                : ImagePlaceHolder(
+                    borderRadius: borderRadius ??
+                        const BorderRadius.all(Radius.circular(8)),
+                  ),
+        errorWidget: (context, url, error) => ErrorPlaceholder(
+          borderRadius:
+              borderRadius ?? const BorderRadius.all(Radius.circular(8)),
+        ),
+        fadeInDuration: const Duration(microseconds: 200),
+        fadeOutDuration: const Duration(microseconds: 500),
+      ),
     );
   }
 }

@@ -5,18 +5,12 @@ enum Rating {
   general,
 }
 
-Rating mapStringToRating(String str) {
-  switch (str) {
-    case 's':
-      return Rating.sensitive;
-    case 'e':
-      return Rating.explicit;
-    case 'g':
-      return Rating.general;
-    default:
-      return Rating.questionable;
-  }
-}
+Rating mapStringToRating(String str) => switch (str) {
+      's' || 'sensitive' => Rating.sensitive,
+      'e' || 'explicit' => Rating.explicit,
+      'g' || 'general' => Rating.general,
+      _ => Rating.questionable,
+    };
 
 extension RatingX on Rating {
   bool isNSFW() => this == Rating.explicit || this == Rating.questionable;

@@ -2,33 +2,8 @@
 import 'package:equatable/equatable.dart';
 
 // Project imports:
-import 'package:boorusama/core/application/theme/theme.dart';
-import 'package:boorusama/core/core.dart';
-
-enum DataCollectingStatus {
-  allow,
-  prohibit,
-}
-
-enum ActionBarDisplayBehavior {
-  scrolling,
-  staticAtBottom,
-}
-
-enum DetailsDisplay {
-  postFocus,
-  imageFocus,
-}
-
-enum DownloadMethod {
-  flutterDownloader,
-  imageGallerySaver,
-}
-
-enum ContentOrganizationCategory {
-  infiniteScroll,
-  pagination,
-}
+import 'package:boorusama/core/application/theme.dart';
+import 'types.dart';
 
 class Settings extends Equatable {
   const Settings({
@@ -39,7 +14,6 @@ class Settings extends Equatable {
     required this.gridSize,
     required this.dataCollectingStatus,
     required this.downloadPath,
-    required this.downloadMethod,
     required this.imageBorderRadius,
     required this.imageGridSpacing,
     required this.actionBarDisplayBehavior,
@@ -47,9 +21,12 @@ class Settings extends Equatable {
     required this.imageQualityInFullView,
     required this.imageListType,
     required this.detailsDisplay,
-    required this.contentOrganizationCategory,
+    required this.pageMode,
     required this.autoFocusSearchBar,
     required this.postsPerPage,
+    required this.currentBooruConfigId,
+    required this.downloadQuality,
+    required this.showScoresInGrid,
   });
 
   Settings.fromJson(Map<String, dynamic> json)
@@ -61,14 +38,11 @@ class Settings extends Equatable {
         dataCollectingStatus = json['dataCollectingStatus'] != null
             ? DataCollectingStatus.values[json['dataCollectingStatus']]
             : DataCollectingStatus.allow,
-        language = json['language'] ?? 'en',
+        language = json['language'] ?? 'en-US',
         gridSize = json['gridSize'] != null
             ? GridSize.values[json['gridSize']]
             : GridSize.normal,
         downloadPath = json['downloadPath'],
-        downloadMethod = json['downloadMethod'] != null
-            ? DownloadMethod.values[json['downloadMethod']]
-            : DownloadMethod.flutterDownloader,
         actionBarDisplayBehavior = json['actionBarDisplayBehavior'] != null
             ? ActionBarDisplayBehavior.values[json['actionBarDisplayBehavior']]
             : ActionBarDisplayBehavior.scrolling,
@@ -84,13 +58,16 @@ class Settings extends Equatable {
         detailsDisplay = json['detailsDisplay'] != null
             ? DetailsDisplay.values[json['detailsDisplay']]
             : DetailsDisplay.postFocus,
-        contentOrganizationCategory =
-            json['contentOrganizationCategory'] != null
-                ? ContentOrganizationCategory
-                    .values[json['contentOrganizationCategory']]
-                : ContentOrganizationCategory.infiniteScroll,
+        pageMode = json['contentOrganizationCategory'] != null
+            ? PageMode.values[json['contentOrganizationCategory']]
+            : PageMode.infinite,
+        downloadQuality = json['downloadQuality'] != null
+            ? DownloadQuality.values[json['downloadQuality']]
+            : DownloadQuality.original,
+        showScoresInGrid = json['showScoresInGrid'] ?? false,
         autoFocusSearchBar = json['autoFocusSearchBar'] ?? true,
         postsPerPage = json['postsPerPage'] ?? 60,
+        currentBooruConfigId = json['currentBooruConfigId'],
         imageBorderRadius = json['imageBorderRadius'],
         imageGridSpacing = json['imageGridSpacing'];
 
@@ -98,11 +75,10 @@ class Settings extends Equatable {
     safeMode: true,
     blacklistedTags: '',
     themeMode: ThemeMode.amoledDark,
-    language: 'en',
+    language: 'en-US',
     gridSize: GridSize.normal,
     dataCollectingStatus: DataCollectingStatus.allow,
     downloadPath: null,
-    downloadMethod: DownloadMethod.flutterDownloader,
     imageBorderRadius: 4,
     imageGridSpacing: 4,
     actionBarDisplayBehavior: ActionBarDisplayBehavior.scrolling,
@@ -110,9 +86,12 @@ class Settings extends Equatable {
     imageQualityInFullView: ImageQuality.automatic,
     imageListType: ImageListType.masonry,
     detailsDisplay: DetailsDisplay.postFocus,
-    contentOrganizationCategory: ContentOrganizationCategory.infiniteScroll,
+    pageMode: PageMode.infinite,
     autoFocusSearchBar: true,
     postsPerPage: 60,
+    currentBooruConfigId: -1,
+    downloadQuality: DownloadQuality.original,
+    showScoresInGrid: false,
   );
 
   final String blacklistedTags;
@@ -123,7 +102,6 @@ class Settings extends Equatable {
   final DataCollectingStatus dataCollectingStatus;
 
   final String? downloadPath;
-  final DownloadMethod downloadMethod;
 
   final double imageBorderRadius;
   final double imageGridSpacing;
@@ -138,11 +116,17 @@ class Settings extends Equatable {
 
   final DetailsDisplay detailsDisplay;
 
-  final ContentOrganizationCategory contentOrganizationCategory;
+  final PageMode pageMode;
 
   final bool autoFocusSearchBar;
 
   final int postsPerPage;
+
+  final int currentBooruConfigId;
+
+  final DownloadQuality downloadQuality;
+
+  final bool showScoresInGrid;
 
   Settings copyWith({
     String? blacklistedTags,
@@ -152,7 +136,6 @@ class Settings extends Equatable {
     GridSize? gridSize,
     DataCollectingStatus? dataCollectingStatus,
     String? downloadPath,
-    DownloadMethod? downloadMethod,
     double? imageBorderRadius,
     double? imageGridSpacing,
     ActionBarDisplayBehavior? actionBarDisplayBehavior,
@@ -160,9 +143,12 @@ class Settings extends Equatable {
     ImageQuality? imageQualityInFullView,
     ImageListType? imageListType,
     DetailsDisplay? detailsDisplay,
-    ContentOrganizationCategory? contentOrganizationCategory,
+    PageMode? pageMode,
     bool? autoFocusSearchBar,
     int? postsPerPage,
+    int? currentBooruConfigId,
+    DownloadQuality? downloadQuality,
+    bool? showScoresInGrid,
   }) =>
       Settings(
         safeMode: safeMode ?? this.safeMode,
@@ -172,7 +158,6 @@ class Settings extends Equatable {
         gridSize: gridSize ?? this.gridSize,
         dataCollectingStatus: dataCollectingStatus ?? this.dataCollectingStatus,
         downloadPath: downloadPath ?? this.downloadPath,
-        downloadMethod: downloadMethod ?? this.downloadMethod,
         imageBorderRadius: imageBorderRadius ?? this.imageBorderRadius,
         imageGridSpacing: imageGridSpacing ?? this.imageGridSpacing,
         actionBarDisplayBehavior:
@@ -182,10 +167,12 @@ class Settings extends Equatable {
             imageQualityInFullView ?? this.imageQualityInFullView,
         imageListType: imageListType ?? this.imageListType,
         detailsDisplay: detailsDisplay ?? this.detailsDisplay,
-        contentOrganizationCategory:
-            contentOrganizationCategory ?? this.contentOrganizationCategory,
+        pageMode: pageMode ?? this.pageMode,
         autoFocusSearchBar: autoFocusSearchBar ?? this.autoFocusSearchBar,
         postsPerPage: postsPerPage ?? this.postsPerPage,
+        currentBooruConfigId: currentBooruConfigId ?? this.currentBooruConfigId,
+        downloadQuality: downloadQuality ?? this.downloadQuality,
+        showScoresInGrid: showScoresInGrid ?? this.showScoresInGrid,
       );
 
   Map<String, dynamic> toJson() => {
@@ -196,7 +183,6 @@ class Settings extends Equatable {
         'language': language,
         'gridSize': gridSize.index,
         'downloadPath': downloadPath,
-        'downloadMethod': downloadMethod.index,
         'imageBorderRadius': imageBorderRadius,
         'imageGridSpacing': imageGridSpacing,
         'actionBarDisplayBehavior': actionBarDisplayBehavior.index,
@@ -204,9 +190,12 @@ class Settings extends Equatable {
         'imageQualityInFullView': imageQualityInFullView.index,
         'imageListType': imageListType.index,
         'detailsDisplay': detailsDisplay.index,
-        'contentOrganizationCategory': contentOrganizationCategory.index,
+        'contentOrganizationCategory': pageMode.index,
         'autoFocusSearchBar': autoFocusSearchBar,
         'postsPerPage': postsPerPage,
+        'currentBooruConfigId': currentBooruConfigId,
+        'downloadQuality': downloadQuality.index,
+        'showScoresInGrid': showScoresInGrid,
       };
 
   @override
@@ -218,7 +207,6 @@ class Settings extends Equatable {
         gridSize,
         dataCollectingStatus,
         downloadPath,
-        downloadMethod,
         imageBorderRadius,
         imageGridSpacing,
         actionBarDisplayBehavior,
@@ -226,8 +214,15 @@ class Settings extends Equatable {
         imageQualityInFullView,
         imageListType,
         detailsDisplay,
-        contentOrganizationCategory,
+        pageMode,
         autoFocusSearchBar,
         postsPerPage,
+        currentBooruConfigId,
+        downloadQuality,
+        showScoresInGrid,
       ];
+}
+
+extension SettingsX on Settings {
+  bool get hasSelectedBooru => currentBooruConfigId != -1;
 }
