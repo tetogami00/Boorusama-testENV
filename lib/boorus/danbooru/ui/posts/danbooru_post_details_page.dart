@@ -35,7 +35,6 @@ import 'package:boorusama/core/ui/recommend_character_list.dart';
 import 'package:boorusama/core/ui/source_section.dart';
 import 'package:boorusama/core/ui/swipe_target_image.dart';
 import 'package:boorusama/core/ui/widgets/circular_icon_button.dart';
-import 'package:boorusama/functional.dart';
 
 final danbooruPostProvider = Provider<DanbooruPost>((ref) {
   throw UnimplementedError();
@@ -137,7 +136,9 @@ class _DanbooruPostDetailsPageState
         );
       },
       targetSwipeDownBuilder: (context, page) => SwipeTargetImage(
-        imageUrl: posts[page].url720x720,
+        imageUrl: posts[page].isGif
+            ? posts[page].urlOriginal
+            : posts[page].url720x720,
         aspectRatio: posts[page].aspectRatio,
       ),
       expandedBuilder: (context, page, currentPage, expanded, enableSwipe) {
@@ -294,7 +295,9 @@ class _DanbooruPostDetailsPageState
             useHero: page == currentPage,
             heroTag: "${post.id}_hero",
             aspectRatio: post.aspectRatio,
-            imageUrl: post.thumbnailFromSettings(ref.read(settingsProvider)),
+            imageUrl: post.isGif
+                ? post.urlOriginal
+                : post.thumbnailFromSettings(ref.read(settingsProvider)),
             placeholderImageUrl: post.thumbnailImageUrl,
             onTap: onImageTap,
             onCached: (path) => ref
@@ -378,16 +381,13 @@ class DanbooruPostStatsTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final comments = ref.watch(danbooruCommentsProvider)[post.id];
+    final comments = ref.watch(danbooruCommentProvider(post.id));
 
     return RepaintBoundary(
-      child: comments.toOption().fold(
-            () => const SizedBox.shrink(),
-            (comments) => PostStatsTile(
-              post: post,
-              totalComments: comments.length,
-            ),
-          ),
+      child: PostStatsTile(
+        post: post,
+        totalComments: comments?.length ?? 0,
+      ),
     );
   }
 }
