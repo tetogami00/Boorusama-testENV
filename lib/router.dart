@@ -10,7 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:boorusama/boorus/core/feats/settings/settings.dart';
 import 'package:boorusama/foundation/loggers/logger.dart';
 import 'boorus/core/provider.dart';
-import 'foundation/analytics.dart';
+// import 'foundation/analytics.dart';
 import 'routes.dart';
 
 export 'package:go_router/go_router.dart' hide GoRouterHelper;
@@ -20,7 +20,7 @@ final routerProvider = Provider.family<GoRouter, Settings>((ref, settings) {
 
   return GoRouter(
     observers: [
-      if (isAnalyticsEnabled(settings)) getAnalyticsObserver(),
+      // if (isAnalyticsEnabled(settings)) getAnalyticsObserver(),
       if (!kReleaseMode) AppNavigatorObserver(logger),
     ],
     routes: [
