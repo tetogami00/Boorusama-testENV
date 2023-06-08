@@ -1,13 +1,13 @@
 // Flutter imports:
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
 
 // Package imports:
 import 'package:equatable/equatable.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+// import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 // Project imports:
 import 'package:boorusama/boorus/core/feats/settings/settings.dart';
-import 'firebase/firebase.dart';
+// import 'firebase/firebase.dart';
 
 enum AppErrorType {
   failedToLoadBooruConfig,
@@ -74,26 +74,26 @@ extension ServerErrorX on ServerError {
 
 void initializeErrorHandlers(Settings settings) {
   // Pass all uncaught "fatal" errors from the framework to Crashlytics
-  FlutterError.onError = (details) {
-    if (kReleaseMode &&
-        isFirebaseCrashlyticsSupportedPlatforms() &&
-        settings.dataCollectingStatus == DataCollectingStatus.allow) {
-      FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+  // FlutterError.onError = (details) {
+  //   if (kReleaseMode &&
+  //       isFirebaseCrashlyticsSupportedPlatforms() &&
+  //       settings.dataCollectingStatus == DataCollectingStatus.allow) {
+  //     FirebaseCrashlytics.instance.recordFlutterFatalError(details);
 
-      return;
-    }
+  //     return;
+  //   }
 
-    FlutterError.presentError(details);
-  };
+  // FlutterError.presentError(details);
+  // };
 
   // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
-  PlatformDispatcher.instance.onError = (error, stack) {
-    if (kReleaseMode &&
-        isFirebaseCrashlyticsSupportedPlatforms() &&
-        settings.dataCollectingStatus == DataCollectingStatus.allow) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    }
+  // PlatformDispatcher.instance.onError = (error, stack) {
+  //   if (kReleaseMode &&
+  //       isFirebaseCrashlyticsSupportedPlatforms() &&
+  //       settings.dataCollectingStatus == DataCollectingStatus.allow) {
+  //     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+  //   }
 
-    return true;
-  };
+  //   return true;
+  // };
 }

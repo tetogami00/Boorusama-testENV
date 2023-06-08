@@ -726,7 +726,7 @@ packages:
     dependency: transitive
     description:
       name: glob
-      sha256: c51b4fdfee4d281f49b8c957f1add91b815473597f76bcf07377987f66a55729
+      sha256: "4515b5b6ddb505ebdd242a5f2cc5d22d3d6a80013789debfbda7777f47ea308c"
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
