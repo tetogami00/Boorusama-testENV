@@ -729,7 +729,15 @@ packages:
       sha256: c51b4fdfee4d281f49b8c957f1add91b815473597f76bcf07377987f66a55729
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.0"
+    version: "2.1.1"
+  go_router:
+    dependency: "direct main"
+    description:
+      name: go_router
+      sha256: "00d1b67d6e9fa443331da229084dd3eb04407f5a2dff22940bd7bba6af5722c3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.1.1"
   graphs:
     dependency: transitive
     description:
@@ -830,10 +838,10 @@ packages:
     dependency: "direct main"
     description:
       name: jiffy
-      sha256: "9d1ea8fa2955d62d3fd5f83317db4d565350deea13d7884212aa7d0ddb1c9982"
+      sha256: cc1d4b75016a9156c29b5d61f0c9176c3e0fb0580cc5a0e0422b5d2cab3fbfff
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.0"
+    version: "6.2.1"
   js:
     dependency: transitive
     description:
@@ -878,10 +886,10 @@ packages:
     dependency: "direct main"
     description:
       name: lottie
-      sha256: "23522951540d20a57a60202ed7022e6376bed206a4eee1c347a91f58bd57eb9f"
+      sha256: f461105d3a35887b27089abf9c292334478dd292f7b47ecdccb6ae5c37a22c80
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.2"
+    version: "2.4.0"
   markdown:
     dependency: transitive
     description:
@@ -1932,4 +1940,4 @@ packages:
     version: "3.1.2"
 sdks:
   dart: ">=3.0.0 <4.0.0"
-  flutter: ">=3.7.0"
+  flutter: ">=3.10.0"
