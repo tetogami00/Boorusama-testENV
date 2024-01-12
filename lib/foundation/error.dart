@@ -1,13 +1,8 @@
-// Flutter imports:
-// import 'package:flutter/foundation.dart';
-
 // Package imports:
 import 'package:equatable/equatable.dart';
-// import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 // Project imports:
 import 'package:boorusama/core/feats/settings/settings.dart';
-// import 'firebase/firebase.dart';
 
 enum AppErrorType {
   failedToLoadBooruConfig,

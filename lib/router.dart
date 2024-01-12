@@ -7,16 +7,12 @@ import 'package:go_router/go_router.dart';
 
 // Project imports:
 import 'package:boorusama/foundation/loggers/logger.dart';
-// import 'foundation/analytics.dart';
 import 'routes.dart';
 
 export 'package:go_router/go_router.dart';
 
-final routerProvider = Provider.family<GoRouter, bool>((ref, analyticsEnabled) {
+final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    observers: [
-      // if (isAnalyticsEnabled(settings)) getAnalyticsObserver(),
-    ],
     routes: [
       Routes.home(ref),
     ],
@@ -85,16 +81,14 @@ class DialogPage<T> extends Page<T> {
 class RouterBuilder extends ConsumerWidget {
   const RouterBuilder({
     super.key,
-    required this.analyticsEnabled,
     required this.builder,
   });
 
-  final bool analyticsEnabled;
   final Widget Function(BuildContext context, GoRouter router) builder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(routerProvider(analyticsEnabled));
+    final router = ref.watch(routerProvider);
 
     return builder(context, router);
   }

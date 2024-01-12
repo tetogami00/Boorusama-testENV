@@ -6,7 +6,6 @@ import 'package:boorusama/boorus/providers.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
 import 'package:boorusama/core/feats/settings/settings.dart';
 import 'package:boorusama/dart.dart';
-import 'package:boorusama/foundation/analytics.dart';
 
 class BooruConfigNotifier extends Notifier<List<BooruConfig>?> {
   @override
@@ -200,12 +199,6 @@ class BooruConfigNotifier extends Notifier<List<BooruConfig>?> {
         }
 
         onSuccess?.call(config);
-        sendBooruAddedEvent(
-          url: config.url,
-          hintSite: config.booruType.name,
-          totalSites: state!.length,
-          hasLogin: config.hasLoginDetails(),
-        );
 
         _add(config);
       }
