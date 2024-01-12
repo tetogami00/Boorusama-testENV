@@ -11,16 +11,11 @@
             "edit": "Sửa",
             "ok": "OK",
             "cancel": "Huỷ"
-        }
+        },
+        "view": "Xem"
     },
     "profile": {
-        "profile": "Hồ sơ",
-        "favorites": "Yêu thích",
-        "see_more": "Xem thêm",
-        "user_id": "ID người dùng",
-        "level": "Cấp độ",
-        "favorites_count": "Lượt yêu thích",
-        "comments_count": "Tổng số bình luận"
+        "favorites": "Yêu thích"
     },
     "network": {
         "unavailable": "Không có mạng"
@@ -40,12 +35,6 @@
     "post": {
         "detail": {
             "view": "Xem",
-            "slide_show": {
-                "interval": "Chu kỳ (giây)",
-                "skip_anim": "Bỏ animation",
-                "ok": "OK",
-                "cancel": "Hủy"
-            },
             "view_in_browser": "Xem bằng trình duyệt",
             "file_details": "Thông số ảnh",
             "size": "Kích thước",
@@ -70,7 +59,8 @@
             },
             "source_label": "Nguồn",
             "related_posts": "Ảnh liên quan",
-            "add_to_bookmark": "Thêm đánh dấu"
+            "add_to_bookmark": "Thêm đánh dấu",
+            "remove_from_bookmark": "Xoá đánh dấu"
         },
         "parent_child": {
             "children_of": "Ảnh chung bộ với"
@@ -78,6 +68,7 @@
         "action": {
             "preview": "Xem nhanh",
             "view_comments": "Xem bình luận",
+            "add_to_favorite_group": "Thêm vào nhóm yêu thích",
             "select": "Chọn"
         },
         "image_fullview": {
@@ -108,7 +99,6 @@
     "explore": {
         "latest": "Mới",
         "popular": "Phổ biến",
-        "curated": "Tuyển chọn",
         "hot": "Hot",
         "most_viewed": "Xem nhiều",
         "see_more": "Xem thêm"
@@ -118,7 +108,13 @@
             "generic": "Có lỗi xảy ra",
             "tag_limit": "Số tag sử dụng vượt mức cho phép. Nâng cấp tài khoản để có thể dùng nhiều tag hơn.",
             "database_timeout": "Search bị hủy do tốn quá nhiều thời gian.",
-            "rate_limited": "You're being rate limited. Please try again later"
+            "rate_limited": "You're being rate limited. Please try again later",
+            "pagination_limit": "Đã đạt đến giới hạn phân trang, không thể cuộn thêm.",
+            "max_capacity": "Server không thể xử lý thêm yêu cầu, vui lòng thử lại sau.",
+            "down": "Server đang sập, thử lại sau.",
+            "access_denied": "Truy cập bị từ chối",
+            "forbidden": "Không có quyền truy cập",
+            "unknown": "Lỗi server không xác định, vui lòng báo cho dev"
         },
         "hint": "Tìm...",
         "no_result": "Không tìm được kết quả phù hợp.",
@@ -131,7 +127,12 @@
             "recent": "Gần đây"
         },
         "trending": "Xu hướng",
-        "remove_all_selected": "Xoá tất cả các tag đang chọn"
+        "remove_all_selected": "Xoá tất cả các tag đang chọn",
+        "result_counter": {
+            "other": "{} Kết quả"
+        },
+        "no_result_notice": "Không có kết quả",
+        "search_in_progress_notice": "Đang tìm..."
     },
     "pool": {
         "pool": "Ảnh bộ",
@@ -162,10 +163,12 @@
             "show_scores": "Hiện điểm"
         },
         "general": "Chung",
-        "search": "Tìm kiếm",
+        "search": {
+            "search": "Tìm kiếm",
+            "auto_focus_search_bar": "Tự động focus vào thanh tìm kiếm khi mở lần đầu"
+        },
         "information": "Thông tin",
         "changelog": "Changelog",
-        "general_data_source": "Nguồn ảnh",
         "infinite_scroll_warning": "Có khả năng crash app nếu lướt quá lâu",
         "result_layout": {
             "result_layout": "Kiểu layout",
@@ -191,7 +194,8 @@
                 "high": "Cao",
                 "low": "Thấp",
                 "original": "Gốc",
-                "automatic": "Tự động"
+                "automatic": "Tự động",
+                "highest": "Cao nhất"
             },
             "spacing": "Độ dãn cách",
             "corner_radius": "Bo góc"
@@ -226,6 +230,10 @@
             "clear_cache": "Dọn",
             "cache_size_info": "Chiếm {0} Mb trong {1} tệp"
         },
+        "debug_logs": {
+            "debug_logs": "Logs sửa lỗi",
+            "logs_copied": "Đã chép vào clipboard"
+        },
         "download": {
             "path": "Đường dẫn tới nơi lưu ảnh",
             "select_a_folder": "Chọn thư mục",
@@ -245,7 +253,9 @@
         "blacklisted_tags": "Lọc tag",
         "load_error": "Có lỗi xảy ra khi tải dữ liệu",
         "updated": "Tag đã được cập nhật",
-        "limitation_notice": "Chỉ hỗ trợ toán tử <b>NOT</b> và toán tử <b>OR</b>. <br><br>Chưa hỗ trợ lọc bằng metatags cho phiên bản hiện tại."
+        "limitation_notice": "Chỉ hỗ trợ toán tử <b>NOT</b> và toán tử <b>OR</b>. <br><br>Chưa hỗ trợ lọc bằng metatags cho phiên bản hiện tại.",
+        "failed_to_add": "Thêm tag thất bại",
+        "failed_to_remove": "Xoá tag thất bại"
     },
     "download": {
         "download": "Tải ảnh",
@@ -258,11 +268,8 @@
         "bulk_download_cancel": "Hủy",
         "bulk_download_duplicate": "Trùng",
         "bulk_download_invalid_folder_name_error": "Tên thư mục không được chứa các kí tự sau: ",
-        "bulk_download_only_download_new_images": "Chỉ tải ảnh mới",
-        "bulk_download_stay_on_screen_request": "Đừng rời khỏi màn hình này cho tới khi tải xong hết ảnh",
         "bulk_download_folder_select_warning": "Đối với Android 11+, app chỉ có thể lưu files ở thư mục chung <b>({0})</b> . <div>Không hỗ trợ lưu ở thẻ nhớ.</div> <div>Xin hãy chọn thư mục khác.</div> <div>Phiên bản Android của thiết bị này là {1}.</div>",
         "bulk_download_select_a_folder": "Chọn một thư mục",
-        "bulk_download_found_duplicate": "Tìm thấy {} ảnh trùng tên, sẽ không tải những ảnh này",
         "bulk_download_downloaded_counter": {
             "other": "Đã tải {} ảnh"
         },
@@ -310,13 +317,29 @@
         "failed_to_favorite": "Xảy ra lỗi khi xoá yêu thích ảnh này"
     },
     "favorite_groups": {
+        "favorite_groups": "Nhóm yêu thích",
+        "empty_group_notice": "Chưa thêm nhóm nào",
+        "create_group": "Tạo nhóm",
+        "edit_group": "Sửa nhóm",
+        "add_to_group_dialog_title": "Thêm vào nhóm yêu thích",
         "add_to": "Thêm vào",
         "create": "Tạo",
         "private": "Private",
         "view_more_popup": "Xem",
         "items_added_notification_popup": "Đã thêm {0} ảnh vào  {1}",
+        "group_name": "Tên nhóm",
+        "group_name_hint": "Nhóm mới",
+        "all_posts": "Ảnh",
+        "initial_posts_hint": "Nhập các ID, cách nhau bằng dấu cách (Không bắt buộc)",
+        "is_private_group_option": "Nhóm kín",
         "create_group_cancel": "Huỷ",
-        "create_group_confirm": "OK"
+        "create_group_confirm": "OK",
+        "max_limit_warning": "Member thường chỉ có thể tạo 10 nhóm",
+        "duplicate_items_warning_notification": "Có ID bị trùng trong nhóm",
+        "detete_confirmation": "Bạn có chắc là muốn xoá nhóm này không",
+        "group_item_counter": {
+            "other": "{} ảnh"
+        }
     },
     "favorite_tags": {
         "favorites": "Yêu thích",
@@ -336,7 +359,6 @@
     },
     "sideMenu": {
         "settings": "Cài đặt",
-        "manage_boorus": "Quản lí Booru",
         "your_bookmarks": "Đánh dấu",
         "your_blacklist": "Sổ đen",
         "bulk_download": "Tải hàng loạt"
@@ -347,7 +369,28 @@
         "month": "Tháng"
     },
     "booru": {
-        "addNew": "Tạo thêm booru"
+        "addNew": "Tạo thêm booru",
+        "booru_engine_input_label": "Booru engine (*)",
+        "config_name_label": "Tên profile  (*)",
+        "site_url_label": "URL của web",
+        "login_name_label": "Tên đăng nhập",
+        "password_api_key_label": "API key",
+        "password_hashed_label": "Mật khẩu đã được mã hóa (chỉ đọc)",
+        "password_label": "Mật khẩu",
+        "content_filtering_label": "Lọc nội dung",
+        "hide_deleted_label": "Ẩn ảnh bị xoá",
+        "config_booru_confirm": "Chốt",
+        "add_a_booru_site": "Thêm booru",
+        "next_step": "Tiếp",
+        "site_url": "Địa chỉ trang web",
+        "unsupported_warning": "Trang booru này chưa được hỗ trợ.",
+        "validation_empty_url": "URL rỗng",
+        "validation_invalid_url": "\"{0}\" không phải là một đường dẫn URL hợp lệ.",
+        "validation_invalid_http_url": "\"{0}\" không phải là một đường dẫn URL HTTP hoặc HTTPS.",
+        "validation_missing_trailing_slash": "\"{0}\" thiếu dấu gạch chéo phía sau",
+        "validation_redundant_www": "\"{0}\" chứa \"www\" thừa không cần thiết",
+        "validation_contains_spaces": "\"{0}\" chứa khoảng trắng không cần thiết ở giữa.",
+        "validation_missing_scheme": "\"{0}\" thiếu giao thức (ví dụ: https://)"
     },
     "blacklist": {
         "manage": {
@@ -365,5 +408,14 @@
         "failed_to_remove": "Xoá đánh dấu không thành công",
         "failed_to_update": "Cập nhật đánh dấu không thành công",
         "failed_to_load": "Tải đánh dấu thất bại: {0}"
+    },
+    "app_update": {
+        "update": "Cập nhật",
+        "later": "Để sau",
+        "whats_new": "Có gì mới?",
+        "update_available": "Có cập nhật mới"
+    },
+    "forum": {
+        "forum": "Diễn đàn"
     }
 }

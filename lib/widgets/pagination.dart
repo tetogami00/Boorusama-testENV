@@ -4,6 +4,9 @@ import 'dart:math' as math;
 // Flutter imports:
 import 'package:flutter/material.dart';
 
+// Package imports:
+import 'package:material_symbols_icons/symbols.dart';
+
 const _maxSelectablePage = 4;
 
 List<int> generatePage({
@@ -30,7 +33,7 @@ List<int> generatePage({
   ).toSet().toList();
 }
 
-class PageSelector extends StatelessWidget {
+class PageSelector extends StatefulWidget {
   const PageSelector({
     super.key,
     required this.currentPage,
@@ -49,49 +52,103 @@ class PageSelector extends StatelessWidget {
   final void Function(int page) onPageSelect;
 
   @override
+  State<PageSelector> createState() => _PageSelectorState();
+}
+
+class _PageSelectorState extends State<PageSelector> {
+  var pageInputMode = false;
+
+  @override
   Widget build(BuildContext context) {
     return ButtonBar(
-      buttonPadding: const EdgeInsets.symmetric(horizontal: 2),
+      buttonPadding: EdgeInsets.zero,
       alignment: MainAxisAlignment.center,
       children: [
         IconButton(
-          onPressed: onPrevious,
+          onPressed: widget.onPrevious,
           icon: const Icon(
-            Icons.chevron_left,
+            Symbols.chevron_left,
             size: 32,
           ),
         ),
         ...generatePage(
-          current: currentPage,
-          total: totalResults,
-          itemPerPage: itemPerPage,
-        ).map((page) => ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: const CircleBorder(),
-                shadowColor: Colors.transparent,
-                backgroundColor: page == currentPage
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.transparent,
+          current: widget.currentPage,
+          total: widget.totalResults,
+          itemPerPage: widget.itemPerPage,
+        ).map(
+          (page) => InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: widget.currentPage != page
+                ? () => widget.onPageSelect(page)
+                : null,
+            child: Container(
+              constraints: const BoxConstraints(
+                minWidth: 50,
+                maxWidth: 80,
               ),
-              onPressed: () => onPageSelect(page),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
               child: Text(
                 '$page',
-                style: page == currentPage
-                    ? Theme.of(context).textTheme.titleLarge
-                    : Theme.of(context)
-                        .textTheme
-                        .titleLarge!
-                        .copyWith(color: Theme.of(context).hintColor),
+                textAlign: TextAlign.center,
+                style: page == widget.currentPage
+                    ? const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      )
+                    : TextStyle(
+                        color: Theme.of(context).hintColor,
+                      ),
               ),
-            )),
+            ),
+          ),
+        ),
+        if (!pageInputMode)
+          IconButton(
+            onPressed: () {
+              setState(() {
+                pageInputMode = !pageInputMode;
+              });
+            },
+            icon: const Icon(Symbols.more_horiz),
+          )
+        else
+          SizedBox(
+            width: 50,
+            child: Focus(
+              onFocusChange: (value) {
+                if (!value) {
+                  setState(() {
+                    pageInputMode = false;
+                  });
+                }
+              },
+              child: TextField(
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                onSubmitted: onSubmit,
+              ),
+            ),
+          ),
         IconButton(
-          onPressed: onNext,
+          onPressed: widget.onNext,
           icon: const Icon(
-            Icons.chevron_right,
+            Symbols.chevron_right,
             size: 32,
           ),
         ),
       ],
     );
+  }
+
+  void onSubmit(String value) {
+    setState(() {
+      pageInputMode = !pageInputMode;
+    });
+    final page = int.tryParse(value);
+    if (page != null) {
+      widget.onPageSelect(page);
+    }
   }
 }

@@ -3,13 +3,13 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Project imports:
-import 'package:boorusama/boorus/core/provider.dart';
+import 'package:boorusama/boorus/providers.dart';
 import 'package:boorusama/foundation/networking/networking.dart';
 
 const _serviceName = 'Connectivity';
 
 final connectivityProvider = StreamProvider<ConnectivityResult>((ref) {
-  final logger = ref.read(loggerProvider);
+  final logger = ref.watch(loggerProvider);
   ref.listenSelf(
     (previous, next) {
       final fn = next.when(

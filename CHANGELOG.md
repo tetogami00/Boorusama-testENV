@@ -1,3 +1,174 @@
+# 3.9.2
+- Fix an issue where webm files cannot be played.
+- Fix tag highlighting not working on some sites.
+
+# 3.9.1
+- Add an option to hide bookmarked posts from search results.
+- Bug fixes and UI/UX improvements.
+
+# 3.9.0
+- Support exporting/importing booru profiles and settings.
+- Centralize all export/import options into a new section in settings.
+- Display more information in file details.
+- Add an 'uploaderid' metatag to filter posts by uploader ID.
+- Enable swipe-from-edge gesture to navigate back on most pages.
+- Address several issues with the video player.
+
+# 3.8.1
+- Fix an issue where the download won't start in bookmark details.
+- Add a button to display some statistics for the current query.
+- Fix the crash issue on some devices using Android 8 and below.
+
+# 3.8.0
+- Migrate to Material 3, support dynamic theme color for Android 12+
+- Show more information in bookmark details
+- Add more privacy focus features like incognito keyboard, biometric lock
+- Add an option to duplicate a profile
+- Add an option to clear image cache on startup
+- [Danbooru] Add a button to show a post version history
+- [Gelbooru] Add a favorite tab
+- A lot of bug fixes and UI adjustments
+
+# 3.7.1
+- Add a mute button for videos
+- Add an option in profile settings to change default image resolution
+- Minor bug fixes
+
+# 3.7.0
+- Introduce custom filename formatting for downloaded files, which you can find in profile settings.
+- Improve bookmark management, you can now filter and sort bookmarks.
+- Allow the import/export of bookmarks as a file.
+- Make search suggestions more responsive.
+- [Danbooru] Add artist search page.
+- Performance improvements and bug fixes.
+
+# 3.6.0
+- Add tag highlighing for various sites
+- [Danbooru] Add support tag editting
+- Fix an issue where downloading a video would result in an image file for some sites.
+- Performance improvement and bug fixes
+
+# 3.5.3
+- Add Data and Storage settings
+- [Gelbooru V2] Add tag highlighting in post details
+- Resolve an issue with certain sites not functioning on Android 7 and below
+- Address several minor bug fixes
+
+# 3.5.2
+- Fix reordering profiles not working again
+- Fix filter won't be applied properly
+- Add a default new when creating a new profile
+- Update Spanish translation
+
+# 3.5.1
+- Minor bug fixes
+
+# 3.5.0
+- Add support for Gelbooru V1, Sankaku, Philomena, Shimmie2
+- Support export bookmarks as file (Will add import feature in the future)
+- [Zerochan] Allow bulk download
+- [Danbooru] Add basic Dmail support
+- Add a button to move to search page from favorites page
+- Fix bulk download not working on some devices
+- Fix image failing to load on some sites
+- Fix reordering profiles not working properly
+- Various bug fixes and UI adjustments
+
+# 3.4.1
+- Fix an issue where some buttons are not tappable
+- Fix a bug that causes images to not load properly when switching between tabs
+
+# 3.4.0
+- [Danbooru] Add Profile page
+- [Moebooru] Show parent/child posts in post details
+- Add an option to import/export blacklisted tags as text
+- Add support for all Gelbooru v0.2 sites (hopefully)
+- Add support for Zerochan
+- Only auto-blacklists censored tags on Danbooru, not other Danbooru-based sites
+- Fix an issue where video don't display duration on some sites
+
+# 3.3.5
+- Fix an issue from the previous update that causes some sites to not load properly
+- Minor bug fixes
+
+# 3.3.4
+- Fix an error that causes a certain site to not load properly
+- [Danbooru] Add censored tags to the default blacklist if the user doesn't have the privilege to view them.
+- Minor bug fixes.
+
+# 3.3.3
+- Autoplay MP4 videos.
+- Add a button to retry a failed/canceled download in bulk download page
+- Introduce a `downvotes` metatag to the global blacklist for filtering posts with more than a specified number of downvotes (e.g. `downvotes:>5`).
+- Enhance loading speed in specific scenarios.
+- [Danbooru] Enable users to share any links and redirect them to the upload page.
+- Resolve an issue causing the app to crash when consecutively opening multiple videos.
+
+# 3.3.2
+- Include some text to make configuring sites less confusing
+- Reintroduce video handle for skipping forward and backward.
+- Show download toast when a download starts
+
+# 3.3.1
+- Fix an issue where a certain site does not parse data correctly.
+- [Danbooru] Show artists' URLs on the artist page.
+- Minor UI adjustments.
+
+# 3.3.0
+- Groundwork for desktop version
+- Move all items in the bottom navigation bar to the side drawer
+- Update overall UI, UX for creating/editing/selecting sites
+- Blacklisted tags are now can be turned on/off in image list
+- Global blacklisted tags are now using Danbooru's blacklist syntax. Also support filter using rating and score
+- [Danbooru] Add related tags and tag cloud 
+- Minor bug fixes and UI adjustments
+
+# 3.2.1
+- Fix an issue that causes users to be unable to select a download folder if the app is installed in a different user space
+- Minor updates to Chinese (Simplified) translation
+
+# 3.2.0
+- Initial forum support for Danbooru
+- Add comment support for Gelbooru
+- Revamp the details page for Moebooru to match the other sites
+- Add a recently popular tab for Moebooru
+- Streamline the booru site selection process
+- Revamp the UI for tag list
+- Fix an issue where changing the booru site won't register until the app is restarted
+- Fix an bug where blacklisted tags are not properly applied
+- Add Chinese (Traditional) translation and update Spanish translation
+- Minor UI adjustments and bug fixes
+
+# 3.1.0
+- Add support for e621/e926
+- Add some translations for Turkish and Ukrainian
+- Add and update translations for French and Chinese (Simplified)
+
+# 3.0.3
+- Adjust the sensitivity of the swipe to dismiss gesture
+- Fix an issue where you can't tap on the translation notes
+- Add a highest quality option for choosing image quality
+- Update translations for German and Portuguese (BR)
+- Fix a few UI glitches
+
+# 3.0.2
+- Fix a bug where '-' and '~' search operators don't work
+- Add a quick action context menu for adding tags to global blacklist in post details
+- Add a page input field when using pagination
+- Add translation for Portuguese (BR)
+- A few minor UI adjustments and bug fixes
+
+# 3.0.1
+- Fix display issues on tablets
+- Various bug fixes
+
+# 3.0.0
+- Support other boorus sites
+- Redesign details page
+- Improve performance when loading images
+- Bulk download is now out of beta, no need to stay in the screen to keep the download going
+- Add a translation project for the app
+
 # 2.11.2
 - Fixed broken thumbnails
 

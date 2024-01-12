@@ -2,12 +2,18 @@
 import 'package:equatable/equatable.dart';
 
 // Project imports:
-import 'package:boorusama/boorus/core/feats/posts/posts.dart';
+import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/foundation/image.dart';
 import 'package:boorusama/foundation/video.dart';
 
 class MoebooruPost extends Equatable
-    with MediaInfoMixin, TranslatedMixin, ImageInfoMixin, VideoInfoMixin
+    with
+        MediaInfoMixin,
+        TranslatedMixin,
+        ImageInfoMixin,
+        VideoInfoMixin,
+        NoTagDetailsMixin,
+        TagListCheckMixin
     implements Post {
   MoebooruPost({
     required this.id,
@@ -26,6 +32,9 @@ class MoebooruPost extends Equatable
     required this.md5,
     required this.fileSize,
     required this.score,
+    required this.createdAt,
+    required this.parentId,
+    required this.uploaderId,
   });
 
   @override
@@ -63,9 +72,9 @@ class MoebooruPost extends Equatable
   final int score;
 
   @override
-  String getLink(String baseUrl) {
-    return '$baseUrl/post/show/$id';
-  }
+  String getLink(String baseUrl) => baseUrl.endsWith('/')
+      ? '${baseUrl}post/show/$id'
+      : '$baseUrl/post/show/$id';
 
   @override
   Uri getUriLink(String baseUrl) {
@@ -77,4 +86,20 @@ class MoebooruPost extends Equatable
 
   @override
   double get duration => -1;
+
+  @override
+  final DateTime? createdAt;
+
+  @override
+  bool? get hasSound => null;
+  @override
+  String get videoUrl => originalImageUrl;
+  @override
+  String get videoThumbnailUrl => thumbnailImageUrl;
+  @override
+  int? get downvotes => null;
+  @override
+  final int? parentId;
+  @override
+  final int? uploaderId;
 }

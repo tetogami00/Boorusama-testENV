@@ -2,7 +2,7 @@
 import 'package:test/test.dart';
 
 // Project imports:
-import 'package:boorusama/boorus/core/feats/posts/posts.dart';
+import 'package:boorusama/core/feats/posts/posts.dart';
 
 void main() {
   group('[post rating test]', () {
@@ -24,7 +24,7 @@ void main() {
     );
     test(
       'anything',
-      () => expect(mapStringToRating('anything'), equals(Rating.questionable)),
+      () => expect(mapStringToRating('anything'), equals(Rating.sensitive)),
     );
   });
 }

@@ -10,7 +10,9 @@ import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart' as el;
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:timeago/timeago.dart';
+
+// Project imports:
+import 'package:boorusama/time.dart';
 
 export 'package:easy_localization/easy_localization.dart'
     hide
@@ -33,8 +35,12 @@ const supportedLocales = [
   Locale('de', 'DE'), // German (Germany)
   Locale('es', 'ES'), // Spanish (Spain)
   Locale('pt', 'PT'), // Portuguese (Portugal)
+  Locale('pt', 'BR'), // Portuguese (Brazil)
   Locale('zh', 'CN'), // Simplified Chinese
   Locale('zh', 'TW'), // Traditional Chinese
+  Locale('uk', 'UA'), // Ukrainian (Ukraine)
+  Locale('tr', 'TR'), // Turkish (Turkey)
+  Locale('fr', 'FR'), // French (France)
 ];
 
 LookupMessages getMessagesForLocale(Locale locale) =>
@@ -42,13 +48,17 @@ LookupMessages getMessagesForLocale(Locale locale) =>
       'en-US' => EnMessages(),
       'vi-VN' => ViMessages(),
       'ru-RU' => RuMessages(),
-      'be-BY' => RuMessages(),
+      'be-BY' => BeMessages(),
       'ja-JP' => JaMessages(),
       'de-DE' => DeMessages(),
       'pt-PT' => PtBrMessages(),
+      'pt-BR' => PtBrMessages(),
       'es-ES' => EsMessages(),
       'zh-CN' => ZhCnMessages(),
       'zh-TW' => ZhMessages(),
+      'uk-UA' => UkMessages(),
+      'tr-TR' => TrMessages(),
+      'fr-FR' => FrMessages(),
       _ => throw Exception('Unsupported locale $locale')
     };
 
@@ -69,7 +79,7 @@ extension TextTranslateX on Text {
         locale: locale,
         softWrap: softWrap,
         overflow: overflow,
-        textScaleFactor: textScaleFactor,
+        textScaler: textScaler,
         maxLines: maxLines,
         semanticsLabel: semanticsLabel,
         textWidthBasis: textWidthBasis,

@@ -2,12 +2,18 @@
 import 'package:equatable/equatable.dart';
 
 // Project imports:
-import 'package:boorusama/boorus/core/feats/posts/posts.dart';
+import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/foundation/image.dart';
 import 'package:boorusama/foundation/video.dart';
 
 class GelbooruPost extends Equatable
-    with MediaInfoMixin, TranslatedMixin, ImageInfoMixin, VideoInfoMixin
+    with
+        MediaInfoMixin,
+        TranslatedMixin,
+        ImageInfoMixin,
+        VideoInfoMixin,
+        NoTagDetailsMixin,
+        TagListCheckMixin
     implements Post {
   const GelbooruPost({
     required this.format,
@@ -25,6 +31,9 @@ class GelbooruPost extends Equatable
     required this.hasParentOrChildren,
     required this.fileSize,
     required this.score,
+    required this.createdAt,
+    required this.parentId,
+    required this.uploaderId,
   }) : _sampleImageUrl = sampleImageUrl;
 
   factory GelbooruPost.empty() => GelbooruPost(
@@ -43,6 +52,9 @@ class GelbooruPost extends Equatable
         hasParentOrChildren: false,
         fileSize: 0,
         score: 0,
+        createdAt: null,
+        parentId: null,
+        uploaderId: null,
       );
 
   final String _sampleImageUrl;
@@ -106,4 +118,23 @@ class GelbooruPost extends Equatable
 
   @override
   final int score;
+
+  @override
+  final DateTime? createdAt;
+
+  @override
+  int? get downvotes => null;
+
+  @override
+  bool? get hasSound => tags.contains('sound') ? true : null;
+  @override
+  String get videoUrl => originalImageUrl;
+  @override
+  String get videoThumbnailUrl => thumbnailImageUrl;
+
+  @override
+  final int? parentId;
+
+  @override
+  final int? uploaderId;
 }

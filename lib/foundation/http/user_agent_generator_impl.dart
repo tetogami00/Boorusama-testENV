@@ -1,15 +1,19 @@
-// Package imports:
-import 'package:recase/recase.dart';
-
 // Project imports:
+import 'package:boorusama/core/feats/boorus/boorus.dart';
 import 'package:boorusama/foundation/http/user_agent_generator.dart';
+import 'package:boorusama/string.dart';
 
 class UserAgentGeneratorImpl implements UserAgentGenerator {
   UserAgentGeneratorImpl({
     required this.appVersion,
     required this.appName,
+    required BooruConfig config,
   }) {
-    name = '${appName.sentenceCase}/$appVersion';
+    if (config.booruType == BooruType.zerochan) {
+      name = '${appName.sentenceCase}/$appVersion - boorusama';
+    } else {
+      name = '${appName.sentenceCase}/$appVersion';
+    }
   }
 
   final String appVersion;

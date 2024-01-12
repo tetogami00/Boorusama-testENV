@@ -1,0 +1,78 @@
+- danbooru:
+    protocol: https_2
+    sites:
+      - url: https://danbooru.donmai.us/
+        ai-tag: true
+        censored-tags-banned: true
+      - url: https://donmai.moe/
+        ai-tag: true
+        censored-tags-banned: true
+      - url: https://safebooru.donmai.us/
+        ai-tag: true
+        censored-tags-banned: true
+      - url: https://aibooru.online/
+        ai-tag: true
+      - url: https://testbooru.donmai.us/
+
+- moebooru:
+    sites:
+      - url: https://konachan.com/
+        salt: So-I-Heard-You-Like-Mupkids-?--{0}--
+        protocol: https_2
+      - url: https://konachan.net/
+        salt: So-I-Heard-You-Like-Mupkids-?--{0}--
+        protocol: https_2
+      - url: https://yande.re/
+        salt: choujin-steiner--{0}--
+        protocol: https_2
+      - url: https://sakugabooru.com/
+        salt: er@!$rjiajd0$!dkaopc350!Y%)--{0}--
+        protocol: https_2
+      - url: https://lolibooru.moe/
+        salt: --{0}--
+
+- gelbooru:
+    sites:
+      - https://gelbooru.com/
+
+- gelbooru_v2:
+    sites:
+      - url: https://rule34.xxx/
+        api-url: https://api.rule34.xxx/
+      - url: https://hypnohub.net/
+
+- gelbooru_v1: 
+    sites:
+      - https://safebooru.org/
+
+- e621:
+    protocol: https_2
+    sites:
+      - https://e621.net/
+      - https://e926.net/
+
+- zerochan:
+    protocol: https_2
+    sites:
+      - https://zerochan.net/
+
+- sankaku:
+    protocol: https_2
+    headers:
+      - User-Agent: Mozilla/5.0 (Linux; Android 13; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36
+      - Content-Type: application/json
+      - Accept: application/json
+    sites:
+      - https://chan.sankakucomplex.com/
+      - https://beta.sankakucomplex.com/
+
+- philomena:
+    protocol: https_2
+    sites:
+      - https://derpibooru.org/
+      - https://ponybooru.org/
+
+- shimmie2:
+    protocol: https_2
+    sites:
+      - https://rule34.paheal.net/

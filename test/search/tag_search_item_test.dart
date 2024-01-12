@@ -2,9 +2,9 @@
 import 'package:test/test.dart';
 
 // Project imports:
-import 'package:boorusama/boorus/core/feats/search/filter_operator.dart';
-import 'package:boorusama/boorus/core/feats/search/tag_search_item.dart';
-import 'package:boorusama/boorus/core/feats/tags/tags.dart';
+import 'package:boorusama/core/feats/search/filter_operator.dart';
+import 'package:boorusama/core/feats/search/tag_search_item.dart';
+import 'package:boorusama/core/feats/tags/tags.dart';
 
 final _defaultMetatags = [
   const Metatag(
@@ -59,6 +59,25 @@ void main() {
       );
     });
 
+    test('tag with colon', () {
+      final item = TagSearchItem.fromString(
+        ':p',
+        TagInfo(
+          metatags: _defaultMetatags,
+          defaultBlacklistedTags: [],
+          r18Tags: [],
+        ),
+      );
+
+      expect(
+        item,
+        const TagSearchItem(
+          tag: ':p',
+          operator: FilterOperator.none,
+        ),
+      );
+    });
+
     test('tag with operator', () {
       final item = TagSearchItem.fromString(
         '-tag',
@@ -92,6 +111,26 @@ void main() {
         item,
         const TagSearchItem(
           tag: 'tag',
+          metatag: 'foo',
+          operator: FilterOperator.none,
+        ),
+      );
+    });
+
+    test('tag with metatag and its value', () {
+      final item = TagSearchItem.fromString(
+        'foo:>10',
+        TagInfo(
+          metatags: _defaultMetatags,
+          defaultBlacklistedTags: [],
+          r18Tags: [],
+        ),
+      );
+
+      expect(
+        item,
+        const TagSearchItem(
+          tag: '>10',
           metatag: 'foo',
           operator: FilterOperator.none,
         ),

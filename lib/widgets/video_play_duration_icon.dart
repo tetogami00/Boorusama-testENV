@@ -1,8 +1,12 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
+// Package imports:
+import 'package:material_symbols_icons/symbols.dart';
+
 // Project imports:
-import 'package:boorusama/utils/time_utils.dart';
+import 'package:boorusama/functional.dart';
+import 'package:boorusama/time.dart';
 
 class VideoPlayDurationIcon extends StatelessWidget {
   const VideoPlayDurationIcon({
@@ -12,7 +16,7 @@ class VideoPlayDurationIcon extends StatelessWidget {
   });
 
   final double? duration;
-  final bool hasSound;
+  final bool? hasSound;
 
   @override
   Widget build(BuildContext context) {
@@ -32,17 +36,22 @@ class VideoPlayDurationIcon extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               )),
-          hasSound
-              ? const Icon(
-                  Icons.volume_up_rounded,
-                  color: Colors.white70,
-                  size: 18,
-                )
-              : const Icon(
-                  Icons.volume_off_rounded,
-                  color: Colors.white70,
-                  size: 18,
-                ),
+          hasSound.toOption().fold(
+                () => const SizedBox.shrink(),
+                (sound) => sound
+                    ? const Icon(
+                        Symbols.volume_up_rounded,
+                        color: Colors.white70,
+                        size: 18,
+                        fill: 1,
+                      )
+                    : const Icon(
+                        Symbols.volume_off_rounded,
+                        color: Colors.white70,
+                        size: 18,
+                        fill: 1,
+                      ),
+              ),
         ],
       ),
     );

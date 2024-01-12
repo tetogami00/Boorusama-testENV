@@ -1,3 +1,6 @@
+// Dart imports:
+import 'dart:convert';
+
 // Project imports:
 import 'package:boorusama/foundation/error.dart';
 
@@ -14,13 +17,31 @@ String translateBooruError(BooruError error) => switch (error) {
           AppErrorType.unknown => 'generic.errors.unknown',
         },
       ServerError e => switch (e.httpStatusCode) {
-          422 => 'search.errors.tag_limit',
-          500 => 'search.errors.database_timeout',
-          429 => 'search.errors.rate_limited',
-          410 => 'search.errors.pagination_limit',
-          403 => 'search.errors.access_denied',
           401 => 'search.errors.forbidden',
+          403 => 'search.errors.access_denied',
+          410 => 'search.errors.pagination_limit',
+          422 => 'search.errors.tag_limit',
+          429 => 'search.errors.rate_limited',
+          500 => 'search.errors.database_timeout',
+          502 => 'search.errors.max_capacity',
+          503 => 'search.errors.down',
           _ => 'generic.errors.unknown',
         },
       UnknownError e => e.error.toString(),
     };
+
+String prettyPrintJson(dynamic json) {
+  if (json == null) return '';
+
+  if (json is Map<String, dynamic>) {
+    return const JsonEncoder.withIndent('  ').convert(json);
+  }
+  final jsonStr = json.toString();
+
+  final jsonObj = json.decode(jsonStr);
+  return const JsonEncoder.withIndent('  ').convert(jsonObj);
+}
+
+String wrapIntoJsonToCodeBlock(String json) {
+  return '```json\n$json\n```';
+}

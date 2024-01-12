@@ -56,11 +56,35 @@ extension ListX<E> on List<E> {
     }
   }
 
-  E? firstOrNull(bool Function(E e) selector) {
-    try {
-      return firstWhere(selector);
-    } catch (e) {
-      return null;
+  bool reorder(int oldIndex, int newIndex) {
+    // Check if oldIndex and newIndex are within the bounds of the list
+    if (oldIndex < 0 ||
+        oldIndex >= length ||
+        newIndex < 0 ||
+        newIndex >= length) return false;
+
+    final item = removeAt(oldIndex);
+
+    insert(newIndex, item);
+
+    return true;
+  }
+
+  Map<String, int> count({
+    required String Function(E item) selector,
+  }) {
+    final counts = <String, int>{};
+
+    for (final item in this) {
+      final key = selector(item);
+
+      if (counts.containsKey(key)) {
+        counts[key] = counts[key]! + 1;
+      } else {
+        counts[key] = 1;
+      }
     }
+
+    return counts;
   }
 }

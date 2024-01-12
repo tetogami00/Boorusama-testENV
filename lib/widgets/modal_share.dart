@@ -2,9 +2,10 @@
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
+import 'package:boorusama/flutter.dart';
 import 'package:boorusama/foundation/i18n.dart';
 
 class ModalShare extends StatelessWidget {
@@ -34,26 +35,26 @@ class ModalShare extends StatelessWidget {
             if (sourceLink.isNotEmpty)
               ListTile(
                 title: const Text('post.detail.share.source').tr(),
-                leading: const FaIcon(FontAwesomeIcons.link),
+                leading: const Icon(Symbols.link),
                 onTap: () {
-                  Navigator.of(context).pop();
+                  context.navigator.pop();
                   onTap.call(sourceLink);
                 },
               ),
             ListTile(
               title: const Text('post.detail.share.booru').tr(),
-              leading: const FaIcon(FontAwesomeIcons.box),
+              leading: const Icon(Symbols.box),
               onTap: () {
-                Navigator.of(context).pop();
+                context.navigator.pop();
                 onTap.call(booruLink);
               },
             ),
             if (imagePath.isNotEmpty)
               ListTile(
                 title: const Text('post.detail.share.image').tr(),
-                leading: const FaIcon(FontAwesomeIcons.fileImage),
+                leading: const Icon(Symbols.image),
                 onTap: () {
-                  Navigator.of(context).pop();
+                  context.navigator.pop();
                   onTapFile.call(imagePath);
                 },
               ),

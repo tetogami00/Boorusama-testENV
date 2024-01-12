@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 // Project imports:
+import 'package:boorusama/foundation/theme/theme.dart';
 import 'multi_select_controller.dart';
 
 typedef ScrollableWidgetBuilder<T> = Widget Function(
@@ -19,6 +20,7 @@ typedef HeaderBuilder<T> = Widget Function(
   BuildContext context,
   List<T> selectedItems,
   VoidCallback clearSelected,
+  VoidCallback selectAll,
 );
 
 class MultiSelectWidget<T> extends StatefulWidget {
@@ -81,8 +83,12 @@ class _MultiSelectWidgetState<T> extends State<MultiSelectWidget<T>> {
         appBar: PreferredSize(
             preferredSize: const Size.fromHeight(kToolbarHeight),
             child: multiSelect && widget.headerBuilder != null
-                ? widget.headerBuilder!(context, _controller.selectedItems,
-                    _controller.clearSelected)
+                ? widget.headerBuilder!(
+                    context,
+                    _controller.selectedItems,
+                    _controller.clearSelected,
+                    () => _controller.selectAll(widget.items),
+                  )
                 : const SizedBox.shrink()),
         body: widget.scrollableWidgetBuilder(
           context,
@@ -113,12 +119,12 @@ class SelectableItem extends StatefulWidget {
   final IndexedWidgetBuilder itemBuilder;
 
   const SelectableItem({
-    Key? key,
+    super.key,
     required this.isSelected,
     required this.onTap,
     required this.itemBuilder,
     required this.index,
-  }) : super(key: key);
+  });
 
   @override
   State<SelectableItem> createState() => _SelectableItemState();
@@ -182,13 +188,13 @@ class _SelectableItemState extends State<SelectableItem>
                 margin: const EdgeInsets.all(8.0),
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: context.colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   FontAwesomeIcons.check,
                   size: 18,
-                  color: Theme.of(context).colorScheme.onBackground,
+                  color: context.colorScheme.onBackground,
                 ),
               ),
           ],

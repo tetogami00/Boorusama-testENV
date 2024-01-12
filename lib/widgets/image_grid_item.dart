@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:like_button/like_button.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
 // Project imports:
@@ -36,8 +37,9 @@ class ImageGridItem extends StatelessWidget {
     this.isFaved,
     this.hideOverlay = false,
     this.duration,
-    this.hasSound = false,
+    this.hasSound,
     this.score,
+    this.isAI = false,
   });
 
   final AutoScrollOptions? autoScrollOptions;
@@ -53,8 +55,9 @@ class ImageGridItem extends StatelessWidget {
   final bool? isFaved;
   final bool hideOverlay;
   final double? duration;
-  final bool hasSound;
+  final bool? hasSound;
   final int? score;
+  final bool isAI;
 
   @override
   Widget build(BuildContext context) {
@@ -93,8 +96,9 @@ class ImageGridItem extends StatelessWidget {
                   },
                   likeBuilder: (bool isLiked) {
                     return Icon(
-                      isLiked ? Icons.favorite : Icons.favorite_border_outlined,
+                      isLiked ? Symbols.favorite : Symbols.favorite,
                       color: isLiked ? Colors.redAccent : Colors.white,
+                      fill: isLiked ? 1 : 0,
                     );
                   },
                 ),
@@ -140,7 +144,7 @@ class ImageGridItem extends StatelessWidget {
             if (isAnimated ?? false)
               if (duration == null)
                 const ImageOverlayIcon(
-                  icon: Icons.play_circle_outline,
+                  icon: Symbols.play_circle,
                   size: 20,
                 )
               else
@@ -149,12 +153,27 @@ class ImageGridItem extends StatelessWidget {
                   hasSound: hasSound,
                 ),
             if (isTranslated ?? false)
-              const ImageOverlayIcon(
-                  icon: Icons.g_translate_outlined, size: 20),
+              const ImageOverlayIcon(icon: Symbols.g_translate, size: 20),
             if (hasComments ?? false)
-              const ImageOverlayIcon(icon: Icons.comment, size: 20),
+              const ImageOverlayIcon(icon: Symbols.comment, size: 20),
             if (hasParentOrChildren ?? false)
               const ImageOverlayIcon(icon: FontAwesomeIcons.images, size: 16),
+            if (isAI)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                height: 25,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: const BorderRadius.all(Radius.circular(4)),
+                ),
+                child: const Text(
+                  'AI',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
+              )
           ],
         ),
       ),
@@ -211,8 +230,8 @@ class QuickPreviewImage extends StatelessWidget {
             body: Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.8,
-                  maxWidth: MediaQuery.of(context).size.width * 0.8,
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.8,
+                  maxWidth: MediaQuery.sizeOf(context).width * 0.8,
                 ),
                 child: child,
               ),

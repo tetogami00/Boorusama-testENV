@@ -8,11 +8,16 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 // Project imports:
-import 'package:boorusama/widgets/widgets.dart';
+import 'package:boorusama/dart.dart';
+import 'center_play_button.dart';
 
 class WebmVideoController {
-  WebmVideoController({this.onCurrentPositionChanged}) {
+  WebmVideoController({
+    this.onCurrentPositionChanged,
+    String? userAgent,
+  }) {
     _webViewController = WebViewController()
+      ..setUserAgent(userAgent)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.black);
   }
@@ -26,6 +31,7 @@ class WebmVideoController {
 
   Future<void> load(String html) async {
     await _webViewController.loadHtmlString(html);
+    await Future.delayed(const Duration(seconds: 1));
   }
 
   Timer? _positionCheckTimer;
@@ -37,8 +43,7 @@ class WebmVideoController {
       if (_playing) {
         final currentPosition = await getCurrentTime();
         final totalDuration = await getDuration();
-        onCurrentPositionChanged?.call(
-            currentPosition, totalDuration.isNaN ? 0 : totalDuration);
+        onCurrentPositionChanged?.call(currentPosition, totalDuration ?? 0);
       }
     });
   }
@@ -49,20 +54,20 @@ class WebmVideoController {
 
   double? _duration;
   // get video duration
-  Future<double> getDuration() async {
+  Future<double?> getDuration() async {
     if (_duration != null) return _duration!;
 
     final duration = await _webViewController.runJavaScriptReturningResult(
         'document.getElementById("video").duration;');
-    _duration ??= duration is int ? duration.toDouble() : duration as double;
-    return _duration!;
+    _duration = duration.toDoubleOrNull();
+    return _duration;
   }
 
   // get current video time
   Future<double> getCurrentTime() async {
     final currentTime = await _webViewController.runJavaScriptReturningResult(
         'document.getElementById("video").currentTime;');
-    return currentTime is int ? currentTime.toDouble() : currentTime as double;
+    return currentTime.toDoubleOrNull() ?? 0;
   }
 
   Future<void> play() async {
@@ -142,6 +147,10 @@ class EmbeddedWebViewWebm extends StatefulWidget {
     this.onVisibilityChanged,
     this.onCurrentPositionChanged,
     this.backgroundColor,
+    this.onWebmVideoPlayerCreated,
+    this.autoPlay = false,
+    this.sound = true,
+    this.userAgent,
   });
 
   final String url;
@@ -149,6 +158,10 @@ class EmbeddedWebViewWebm extends StatefulWidget {
   final void Function(bool value)? onVisibilityChanged;
   final void Function(double current, double total, String url)?
       onCurrentPositionChanged;
+  final void Function(WebmVideoController controller)? onWebmVideoPlayerCreated;
+  final bool autoPlay;
+  final bool sound;
+  final String? userAgent;
 
   @override
   State<EmbeddedWebViewWebm> createState() => _EmbeddedWebViewWebmState();
@@ -157,9 +170,19 @@ class EmbeddedWebViewWebm extends StatefulWidget {
 class _EmbeddedWebViewWebmState extends State<EmbeddedWebViewWebm> {
   var showPlay = true;
   late final webmVideoController = WebmVideoController(
+    userAgent: widget.userAgent,
     onCurrentPositionChanged: (current, total) =>
         widget.onCurrentPositionChanged?.call(current, total, widget.url),
   );
+
+  @override
+  void didUpdateWidget(covariant EmbeddedWebViewWebm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.sound != widget.sound) {
+      webmVideoController.mute(!widget.sound);
+    }
+  }
 
   @override
   void initState() {
@@ -168,6 +191,8 @@ class _EmbeddedWebViewWebmState extends State<EmbeddedWebViewWebm> {
       widget.url,
       backgroundColor: widget.backgroundColor ?? Colors.black,
     ));
+    webmVideoController.mute(!widget.sound);
+    widget.onWebmVideoPlayerCreated?.call(webmVideoController);
   }
 
   @override
@@ -189,7 +214,7 @@ class _EmbeddedWebViewWebmState extends State<EmbeddedWebViewWebm> {
         children: [
           Container(
             color: widget.backgroundColor,
-            height: MediaQuery.of(context).size.height,
+            height: MediaQuery.sizeOf(context).height,
             child: WebViewWidget(
                 controller: webmVideoController._webViewController),
           ),

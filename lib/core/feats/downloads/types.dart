@@ -1,0 +1,1 @@
+typedef DownloadFilenameBuilder = String Function();

@@ -1,61 +1,155 @@
 // Flutter imports:
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 
 // Project imports:
-import 'package:boorusama/boorus/core/feats/boorus/boorus.dart';
-import 'package:boorusama/boorus/core/pages/boorus/config_booru_page.dart';
-import 'package:boorusama/boorus/core/widgets/widgets.dart';
+import 'package:boorusama/boorus/booru_builder.dart';
+import 'package:boorusama/boorus/providers.dart';
+import 'package:boorusama/core/feats/boorus/boorus.dart';
+import 'package:boorusama/core/feats/posts/posts.dart';
+import 'package:boorusama/core/feats/settings/settings.dart';
+import 'package:boorusama/core/pages/blacklists/blacklisted_tag_page.dart';
+import 'package:boorusama/core/pages/downloads/bulk_download_page.dart';
+import 'package:boorusama/core/widgets/widgets.dart';
+import 'package:boorusama/flutter.dart';
+import 'package:boorusama/foundation/biometrics/app_lock.dart';
 import 'package:boorusama/foundation/platform.dart';
-import 'package:boorusama/utils/string_utils.dart';
+import 'package:boorusama/foundation/theme/theme.dart';
+import 'package:boorusama/string.dart';
 import 'package:boorusama/widgets/widgets.dart';
-import 'boorus/core/pages/bookmarks/bookmark_details.dart';
-import 'boorus/core/pages/bookmarks/bookmark_page.dart';
-import 'boorus/core/pages/boorus/add_booru_page.dart';
-import 'boorus/core/pages/boorus/manage_booru_user_page.dart';
-import 'boorus/core/pages/settings/appearance_page.dart';
-import 'boorus/core/pages/settings/changelog_page.dart';
-import 'boorus/core/pages/settings/download_page.dart';
-import 'boorus/core/pages/settings/language_page.dart';
-import 'boorus/core/pages/settings/performance_page.dart';
-import 'boorus/core/pages/settings/privacy_page.dart';
-import 'boorus/core/pages/settings/search_settings_page.dart';
-import 'boorus/core/pages/settings/settings_page.dart';
-import 'boorus/core/pages/settings/settings_page_desktop.dart';
-import 'boorus/danbooru/router.dart';
-import 'boorus/home_page.dart';
+import 'boorus/entry_page.dart';
+import 'core/pages/bookmarks/bookmark_details.dart';
+import 'core/pages/bookmarks/bookmark_page.dart';
+import 'core/pages/boorus/add_booru_page.dart';
+import 'core/pages/settings/settings.dart';
 import 'foundation/rating/rating.dart';
 import 'router.dart';
+
+///
+/// When navigate to a page, must query the booru builders first to get the correct builder.
+/// There is case when you want navigate to a different boorus than the current one.
+///
+///```
+/// final config = ref.read(currentBooruConfigProvider);
+/// final booruBuilderFunc =
+///     ref.read(booruBuildersProvider)[config.booruType];
+/// final booruBuilder =
+///     booruBuilderFunc != null ? booruBuilderFunc(config) : null;
+///
+/// // Or you can use this
+/// final booruBuilder = ref.readBooruBuilder(config);
+///```
+///
 
 class BoorusRoutes {
   BoorusRoutes._();
 
-  static GoRoute add() => GoRoute(
-        path: 'add',
-        name: '/boorus/add',
+  static GoRoute add(Ref ref) => GoRoute(
+        path: 'boorus/add',
+        redirect: (context, state) =>
+            isMobilePlatform() ? null : '/desktop/boorus/add',
         builder: (context, state) => AddBooruPage(
+          backgroundColor: context.theme.scaffoldBackgroundColor,
           setCurrentBooruOnSubmit:
-              state.queryParameters["setAsCurrent"]?.toBool() ?? false,
+              state.uri.queryParameters["setAsCurrent"]?.toBool() ?? false,
         ),
       );
 
+  static GoRoute addDesktop() => GoRoute(
+      path: 'desktop/boorus/add',
+      pageBuilder: (context, state) => DialogPage(
+            key: state.pageKey,
+            name: state.name,
+            builder: (context) => const BooruDialog(
+              child: AddBooruPage(
+                setCurrentBooruOnSubmit: false,
+              ),
+            ),
+          ));
+
   static GoRoute update(Ref ref) => GoRoute(
-        path: ':id/update',
+        path: 'boorus/:id/update',
+        redirect: (context, state) => isMobilePlatform()
+            ? null
+            : '/desktop/boorus/${state.pathParameters['id']}/update',
         pageBuilder: (context, state) {
           final idParam = state.pathParameters['id'];
           final id = idParam?.toInt();
           final config = ref
               .read(booruConfigProvider)
-              .firstWhere((element) => element.id == id);
+              ?.firstWhere((element) => element.id == id);
 
-          return MaterialPage(
+          if (config == null) {
+            return const CupertinoPage(
+              child: Scaffold(
+                body: Center(
+                  child: Text('Booru not found or not loaded yet'),
+                ),
+              ),
+            );
+          }
+
+          final booruBuilder = ref.readBooruBuilder(config);
+
+          return CupertinoPage(
             key: state.pageKey,
-            name: '/boorus/$idParam/update',
-            child: ConfigBooruPage(
-              arg: UpdateConfig(config),
+            child: booruBuilder?.updateConfigPageBuilder(
+                  context,
+                  config,
+                  backgroundColor: context.theme.scaffoldBackgroundColor,
+                ) ??
+                Scaffold(
+                  appBar: AppBar(),
+                  body: const Center(
+                    child: Text('Not implemented'),
+                  ),
+                ),
+          );
+        },
+      );
+
+  static GoRoute updateDesktop(Ref ref) => GoRoute(
+        path: 'desktop/boorus/:id/update',
+        pageBuilder: (context, state) {
+          final idParam = state.pathParameters['id'];
+          final id = idParam?.toInt();
+          final config = ref
+              .read(booruConfigProvider)
+              ?.firstWhere((element) => element.id == id);
+
+          if (config == null) {
+            return DialogPage(
+              builder: (context) => const BooruDialog(
+                child: Scaffold(
+                  body: Center(
+                    child: Text('Booru not found or not loaded yet'),
+                  ),
+                ),
+              ),
+            );
+          }
+
+          final booruBuilder = ref.readBooruBuilder(config);
+
+          return DialogPage(
+            key: state.pageKey,
+            name: state.name,
+            builder: (context) => BooruDialog(
+              padding: const EdgeInsets.all(16),
+              child: booruBuilder?.updateConfigPageBuilder(
+                    context,
+                    config,
+                  ) ??
+                  Scaffold(
+                    appBar: AppBar(),
+                    body: const Center(
+                      child: Text('Not implemented'),
+                    ),
+                  ),
             ),
           );
         },
@@ -68,168 +162,358 @@ class SettingsRoutes {
   static GoRoute appearance() => GoRoute(
         path: 'appearance',
         name: '/settings/appearance',
-        pageBuilder: (context, state) => CustomTransitionPage(
+        pageBuilder: (context, state) => CupertinoPage(
           key: state.pageKey,
           name: state.name,
           child: const AppearancePage(),
-          transitionsBuilder: leftToRightTransitionBuilder(),
         ),
       );
 
   static GoRoute download() => GoRoute(
         path: 'download',
         name: '/settings/download',
-        pageBuilder: (context, state) => CustomTransitionPage(
+        pageBuilder: (context, state) => CupertinoPage(
           key: state.pageKey,
           name: state.name,
           child: const DownloadPage(),
-          transitionsBuilder: leftToRightTransitionBuilder(),
         ),
       );
 
   static GoRoute language() => GoRoute(
         path: 'language',
         name: '/settings/language',
-        pageBuilder: (context, state) => CustomTransitionPage(
+        pageBuilder: (context, state) => CupertinoPage(
           key: state.pageKey,
           name: state.name,
           child: const LanguagePage(),
-          transitionsBuilder: leftToRightTransitionBuilder(),
         ),
       );
 
   static GoRoute performance() => GoRoute(
         path: 'performance',
         name: '/settings/performance',
-        pageBuilder: (context, state) => CustomTransitionPage(
+        pageBuilder: (context, state) => CupertinoPage(
           key: state.pageKey,
           name: state.name,
           child: const PerformancePage(),
-          transitionsBuilder: leftToRightTransitionBuilder(),
+        ),
+      );
+
+  static GoRoute dataAndStorage() => GoRoute(
+        path: 'data_and_storage',
+        name: '/settings/data_and_storage',
+        pageBuilder: (context, state) => CupertinoPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const DataAndStoragePage(),
+        ),
+      );
+
+  static GoRoute backupAndRestore() => GoRoute(
+        path: 'backup_and_restore',
+        name: '/settings/backup_and_restore',
+        pageBuilder: (context, state) => CupertinoPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const BackupAndRestorePage(),
         ),
       );
 
   static GoRoute privacy() => GoRoute(
         path: 'privacy',
         name: '/settings/privacy',
-        pageBuilder: (context, state) => CustomTransitionPage(
+        pageBuilder: (context, state) => CupertinoPage(
           key: state.pageKey,
           name: state.name,
           child: const PrivacyPage(),
-          transitionsBuilder: leftToRightTransitionBuilder(),
         ),
       );
 
   static GoRoute search() => GoRoute(
         path: 'search',
         name: '/settings/search',
-        pageBuilder: (context, state) => CustomTransitionPage(
+        pageBuilder: (context, state) => CupertinoPage(
           key: state.pageKey,
           name: state.name,
           child: const SearchSettingsPage(),
-          transitionsBuilder: leftToRightTransitionBuilder(),
         ),
       );
 
   static GoRoute changelog() => GoRoute(
         path: 'changelog',
         name: '/settings/changelog',
-        pageBuilder: (context, state) => CustomTransitionPage(
+        pageBuilder: (context, state) => CupertinoPage(
           key: state.pageKey,
           name: state.name,
           child: const ChangelogPage(),
-          transitionsBuilder: leftToRightTransitionBuilder(),
         ),
       );
 }
 
+const kInitialQueryKey = 'query';
+const kArtistNameKey = 'name';
+
+typedef DetailsPayload<T extends Post> = ({
+  int initialIndex,
+  List<T> posts,
+  AutoScrollController? scrollController,
+  bool isDesktop,
+});
+
 class Routes {
   static GoRoute home(Ref ref) => GoRoute(
         path: '/',
-        builder: (context, state) => ConditionalParentWidget(
-          condition: canRate(),
-          conditionalBuilder: (child) => createAppRatingWidget(child: child),
-          child: CallbackShortcuts(
-            bindings: {
-              const SingleActivator(
-                LogicalKeyboardKey.keyF,
-                control: true,
-              ): () => goToSearchPage(context),
-            },
+        builder: (context, state) => AppLock(
+          enable: ref.read(settingsProvider).appLockEnabled,
+          child: ConditionalParentWidget(
+            condition: canRate(),
+            conditionalBuilder: (child) => createAppRatingWidget(child: child),
             child: const CustomContextMenuOverlay(
               child: Focus(
                 autofocus: true,
-                child: HomePage(),
+                child: EntryPage(),
               ),
             ),
           ),
         ),
         routes: [
-          boorus(ref),
+          BoorusRoutes.update(ref),
+          BoorusRoutes.updateDesktop(ref),
+          BoorusRoutes.add(ref),
+          BoorusRoutes.addDesktop(),
+          search(ref),
+          postDetails(ref),
+          favorites(ref),
+          artists(ref),
           settings(),
+          settingsDesktop(),
           bookmarks(),
+          globalBlacklistedTags(),
+          bulkDownloads(ref),
         ],
       );
 
-  static GoRoute boorus(Ref ref) => GoRoute(
-        path: 'boorus',
-        name: '/boorus',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
-          name: state.name,
-          child: const ManageBooruPage(),
-          transitionsBuilder: leftToRightTransitionBuilder(),
-        ),
-        routes: [
-          BoorusRoutes.add(),
-          BoorusRoutes.update(ref),
-        ],
+  static GoRoute postDetails(Ref ref) => GoRoute(
+        path: 'details',
+        name: '/details',
+        pageBuilder: (context, state) {
+          final config = ref.read(currentBooruConfigProvider);
+          final booruBuilder = ref.readBooruBuilder(config);
+          final builder = booruBuilder?.postDetailsPageBuilder;
+
+          final payload = state.extra as DetailsPayload;
+
+          if (!payload.isDesktop) {
+            return MaterialPage(
+              key: state.pageKey,
+              name: state.name,
+              child: builder != null
+                  ? builder(context, config, payload)
+                  : const Scaffold(
+                      body: Center(child: Text('Not implemented'))),
+            );
+          } else {
+            return builder != null
+                ? DialogPage(
+                    builder: (context) => builder(context, config, payload))
+                : DialogPage(
+                    builder: (_) => const Scaffold(
+                          body: Center(child: Text('Not implemented')),
+                        ));
+          }
+        },
+      );
+
+  static GoRoute search(Ref ref) => GoRoute(
+        path: 'search',
+        name: '/search',
+        pageBuilder: (context, state) {
+          final booruBuilder = ref.readCurrentBooruBuilder();
+          final builder = booruBuilder?.searchPageBuilder;
+          final query = state.uri.queryParameters[kInitialQueryKey];
+
+          return CustomTransitionPage(
+            key: state.pageKey,
+            name: state.name,
+            child: builder != null
+                ? builder(context, query)
+                : const Scaffold(body: Center(child: Text('Not implemented'))),
+            transitionsBuilder: fadeTransitionBuilder(),
+          );
+        },
+      );
+
+  static GoRoute favorites(Ref ref) => GoRoute(
+        path: 'favorites',
+        name: '/favorites',
+        pageBuilder: (context, state) {
+          final config = ref.read(currentBooruConfigProvider);
+          final booruBuilder = ref.readBooruBuilder(config);
+          final builder = booruBuilder?.favoritesPageBuilder;
+
+          return CupertinoPage(
+            key: state.pageKey,
+            name: state.name,
+            child: builder != null
+                ? builder(context, config)
+                : const Scaffold(body: Center(child: Text('Not implemented'))),
+          );
+        },
+      );
+
+  static GoRoute artists(Ref ref) => GoRoute(
+        path: 'artists',
+        name: '/artists',
+        pageBuilder: (context, state) {
+          final booruBuilder = ref.readCurrentBooruBuilder();
+          final builder = booruBuilder?.artistPageBuilder;
+          final artistName = state.uri.queryParameters[kArtistNameKey];
+
+          return createPage(
+            key: state.pageKey,
+            name: state.name,
+            child: builder != null
+                ? artistName != null
+                    ? builder(context, artistName)
+                    : const Scaffold(
+                        body: Center(child: Text('Invalid artist name')))
+                : const Scaffold(body: Center(child: Text('Not implemented'))),
+          );
+        },
       );
 
   static GoRoute bookmarks() => GoRoute(
         path: 'bookmarks',
         name: '/bookmarks',
-        pageBuilder: (context, state) => CustomTransitionPage(
+        pageBuilder: (context, state) => CupertinoPage(
           key: state.pageKey,
           name: state.name,
           child: const BookmarkPage(),
-          transitionsBuilder: leftToRightTransitionBuilder(),
         ),
         routes: [
           GoRoute(
             path: 'details',
             name: '/bookmarks/details',
-            pageBuilder: (context, state) => CustomTransitionPage(
+            pageBuilder: (context, state) => CupertinoPage(
               key: state.pageKey,
-              name: '${state.name}?index=${state.queryParameters['index']}',
+              name: '${state.name}?index=${state.uri.queryParameters['index']}',
               child: BookmarkDetailsPage(
-                initialIndex: state.queryParameters['index']?.toInt() ?? 0,
+                initialIndex: state.uri.queryParameters['index']?.toInt() ?? 0,
               ),
-              transitionsBuilder: leftToRightTransitionBuilder(),
             ),
           ),
         ],
       );
 
+  static GoRoute globalBlacklistedTags() => GoRoute(
+        path: 'global_blacklisted_tags',
+        name: '/global_blacklisted_tags',
+        pageBuilder: (context, state) => CupertinoPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const BlacklistedTagPage(),
+        ),
+      );
+
+  static GoRoute bulkDownloads(Ref ref) => GoRoute(
+        path: 'bulk_downloads',
+        name: '/bulk_downloads',
+        pageBuilder: (context, state) {
+          return CupertinoPage(
+            key: state.pageKey,
+            name: state.name,
+            child: ref.read(currentBooruConfigProvider).booruType ==
+                    BooruType.zerochan
+                ? Scaffold(
+                    appBar: AppBar(
+                      title: const Text('Bulk Download'),
+                    ),
+                    body: const Center(
+                      child: Text(
+                          'Temporarily disabled due to an issue with getting the download link'),
+                    ),
+                  )
+                : const BulkDownloadPage(),
+          );
+        },
+      );
+
   static GoRoute settings() => GoRoute(
         path: 'settings',
         name: '/settings',
-        pageBuilder: (context, state) => CustomTransitionPage(
+        redirect: (context, state) =>
+            !isMobilePlatform() ? '/desktop/settings' : null,
+        pageBuilder: (context, state) => CupertinoPage(
           key: state.pageKey,
           name: state.name,
-          child: isMobilePlatform()
-              ? const SettingsPage()
-              : const SettingsPageDesktop(),
-          transitionsBuilder: leftToRightTransitionBuilder(),
+          child: const SettingsPage(),
         ),
         routes: [
           SettingsRoutes.appearance(),
           SettingsRoutes.download(),
           SettingsRoutes.language(),
           SettingsRoutes.performance(),
+          SettingsRoutes.dataAndStorage(),
+          SettingsRoutes.backupAndRestore(),
           SettingsRoutes.privacy(),
           SettingsRoutes.search(),
           SettingsRoutes.changelog(),
         ],
       );
+
+  static GoRoute settingsDesktop() => GoRoute(
+        path: 'desktop/settings',
+        name: '/desktop/settings',
+        pageBuilder: (context, state) => DialogPage(
+            key: state.pageKey,
+            name: state.name,
+            builder: (context) => Container(
+                  margin: EdgeInsets.symmetric(
+                    vertical: context.screenWidth < 1100
+                        ? 50
+                        : context.screenWidth * 0.1,
+                    horizontal: context.screenHeight < 900
+                        ? 50
+                        : context.screenHeight * 0.2,
+                  ),
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(8),
+                    ),
+                  ),
+                  child: Dialog(
+                    backgroundColor: Theme.of(context).cardColor,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: SettingsPageDesktop(),
+                      ),
+                    ),
+                  ),
+                )),
+      );
 }
+
+Page<T> createPage<T>({
+  required Widget child,
+  String? name,
+  LocalKey? key,
+}) =>
+    isMobilePlatform()
+        ? CupertinoPage<T>(
+            key: key,
+            name: name,
+            child: child,
+          )
+        : MaterialPage<T>(
+            key: key,
+            name: name,
+            child: child,
+          );

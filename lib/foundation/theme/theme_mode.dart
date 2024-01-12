@@ -16,3 +16,12 @@ m.ThemeMode mapAppThemeModeToSystemThemeMode(ThemeMode theme) =>
       ThemeMode.light => m.ThemeMode.light,
       ThemeMode.amoledDark => m.ThemeMode.dark
     };
+
+extension ThemeModeX on ThemeMode {
+  bool get isDark => switch (this) {
+        ThemeMode.light => false,
+        _ => true,
+      };
+
+  bool get isLight => !isDark;
+}

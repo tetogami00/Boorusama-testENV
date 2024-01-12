@@ -2,7 +2,7 @@
 import 'package:test/test.dart';
 
 // Project imports:
-import 'package:boorusama/boorus/core/feats/tags/tags.dart';
+import 'package:boorusama/core/feats/tags/tags.dart';
 
 void main() {
   group('[tag category order test]', () {
@@ -13,7 +13,7 @@ void main() {
     );
     test(
       'character',
-      () => expect(tagCategoryToOrder(TagCategory.charater), 2),
+      () => expect(tagCategoryToOrder(TagCategory.character), 2),
     );
     test('general', () => expect(tagCategoryToOrder(TagCategory.general), 3));
     test('meta', () => expect(tagCategoryToOrder(TagCategory.meta), 4));

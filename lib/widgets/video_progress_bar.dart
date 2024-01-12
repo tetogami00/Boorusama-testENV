@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 
 class VideoProgressBar extends StatefulWidget {
   const VideoProgressBar({
+    super.key,
     required this.duration,
     required this.position,
     required this.buffered,
@@ -13,7 +14,6 @@ class VideoProgressBar extends StatefulWidget {
     this.onDragStart,
     this.onDragUpdate,
     required this.seekTo,
-    Key? key,
     required this.barHeight,
     required this.handleHeight,
     required this.drawShadow,
@@ -21,7 +21,7 @@ class VideoProgressBar extends StatefulWidget {
     required this.playedColor,
     required this.bufferedColor,
     required this.handleColor,
-  }) : super(key: key);
+  });
 
   final Duration duration;
   final Duration position;
@@ -70,8 +70,8 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
       },
       child: Center(
         child: Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.sizeOf(context).height,
+          width: MediaQuery.sizeOf(context).width,
           color: Colors.transparent,
           child: CustomPaint(
             painter: _ProgressBarPainter(
@@ -85,7 +85,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
               playedColor: widget.playedColor,
               bufferedColor: widget.bufferedColor,
               handleColor: widget.handleColor,
-              useHandle: false,
+              useHandle: true,
             ),
           ),
         ),

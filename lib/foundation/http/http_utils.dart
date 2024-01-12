@@ -1,23 +1,23 @@
 // Package imports:
 import 'package:dio/dio.dart';
-import 'package:retrofit/dio.dart';
 
 // Project imports:
 import 'package:boorusama/foundation/error.dart';
 import 'package:boorusama/functional.dart';
 
-typedef DataFetcher = Future<HttpResponse<dynamic>> Function();
+typedef DataFetcher<T> = Future<T> Function();
 
-TaskEither<BooruError, HttpResponse<dynamic>> tryParseResponse({
-  required DataFetcher fetcher,
+TaskEither<BooruError, T> tryFetchRemoteData<T>({
+  required DataFetcher<T> fetcher,
 }) =>
     TaskEither.tryCatch(
       () => fetcher(),
-      (error, stackTrace) => error is DioError
+      (error, stackTrace) => error is DioException
           ? error.response.toOption().fold(
                 () => AppError(type: AppErrorType.cannotReachServer),
                 (response) => ServerError(
                   httpStatusCode: response.statusCode,
+                  message: response.data,
                 ),
               )
           : AppError(type: AppErrorType.loadDataFromServerFailed),

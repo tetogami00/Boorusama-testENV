@@ -2,37 +2,36 @@
 import 'dart:io';
 
 // Flutter imports:
+import 'package:boorusama/boorus/danbooru/feats/users/users.dart';
+import 'package:boorusama/boorus/providers.dart';
+import 'package:boorusama/core/feats/blacklists/blacklists.dart';
+import 'package:boorusama/core/feats/bookmarks/bookmarks.dart';
+import 'package:boorusama/core/feats/boorus/boorus.dart';
+import 'package:boorusama/core/feats/downloads/downloads.dart';
+import 'package:boorusama/core/feats/metatags/metatags.dart';
+import 'package:boorusama/core/feats/search/search.dart';
+import 'package:boorusama/core/feats/search_histories/search_histories.dart';
+import 'package:boorusama/core/feats/settings/settings.dart';
+import 'package:boorusama/core/feats/tags/tags.dart';
+import 'package:boorusama/dart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:stack_trace/stack_trace.dart' as stack_trace;
 import 'package:video_player_win/video_player_win.dart';
 
 // Project imports:
-import 'package:boorusama/boorus/core/feats/blacklists/blacklists.dart';
-import 'package:boorusama/boorus/core/feats/bookmarks/bookmarks.dart';
-import 'package:boorusama/boorus/core/feats/boorus/booru_config_repository_hive.dart';
-import 'package:boorusama/boorus/core/feats/boorus/boorus.dart';
-import 'package:boorusama/boorus/core/feats/downloads/downloads.dart';
-import 'package:boorusama/boorus/core/feats/metatags/metatags.dart';
-import 'package:boorusama/boorus/core/feats/search/search.dart';
-import 'package:boorusama/boorus/core/feats/search_histories/search_histories.dart';
-import 'package:boorusama/boorus/core/feats/settings/settings.dart';
-import 'package:boorusama/boorus/core/feats/tags/tags.dart';
-import 'package:boorusama/boorus/core/provider.dart';
 import 'package:boorusama/boorus/danbooru/feats/tags/tags.dart';
 import 'package:boorusama/foundation/app_info.dart';
 import 'package:boorusama/foundation/device_info_service.dart';
-import 'package:boorusama/foundation/http/user_agent_generator.dart';
 import 'package:boorusama/foundation/loggers/loggers.dart';
-import 'package:boorusama/foundation/networking/networking.dart';
+import 'package:boorusama/foundation/package_info.dart';
+import 'package:boorusama/foundation/path.dart';
 import 'package:boorusama/foundation/platform.dart';
 import 'app.dart';
 import 'foundation/i18n.dart';
@@ -59,8 +58,8 @@ void main() async {
 
   if (isDesktopPlatform()) {
     doWhenWindowReady(() {
-      const initialSize = Size(1024, 600);
-      const minSize = Size(300, 300);
+      const initialSize = Size(1000, 700);
+      const minSize = Size(950, 500);
       appWindow.minSize = minSize;
       appWindow.size = initialSize;
       appWindow.alignment = Alignment.center;
@@ -68,9 +67,10 @@ void main() async {
     });
   }
 
+  final appInfo = await getAppInfo();
+
   final booruFactory = BooruFactory.from(
-    await loadBooruList(),
-    await loadBooruSaltList(),
+    await loadBoorusFromAssets(),
   );
 
   final settingRepository = SettingsRepositoryLoggerInterceptor(
@@ -79,6 +79,17 @@ void main() async {
     ),
     logger: logger,
   );
+
+  try {
+    // https://stackoverflow.com/questions/69511057/flutter-on-android-7-certificate-verify-failed-with-letsencrypt-ssl-cert-after-s
+    // On Android 7 and below, the Let's Encrypt certificate is not trusted by default and needs to be added manually.
+    final cert = await rootBundle.load('assets/ca/isrgrootx1.pem');
+
+    SecurityContext.defaultContext
+        .setTrustedCertificatesBytes(cert.buffer.asUint8List());
+  } catch (e) {
+    // ignore errors here, maybe it's already trusted
+  }
 
   Box<String> booruConfigBox;
   if (await Hive.boxExists('booru_configs')) {
@@ -140,8 +151,12 @@ void main() async {
   final bookmarkBox = await Hive.openBox<BookmarkHiveObject>("favorites");
   final bookmarkRepo = BookmarkHiveRepository(bookmarkBox);
 
+  final danbooruCreatorBox = await Hive.openBox(
+    '${Uri.encodeComponent(initialConfig?.url ?? 'danbooru')}_creators_v1',
+    path: (await getTemporaryDirectory()).path,
+  );
+
   final packageInfo = await PackageInfo.fromPlatform();
-  final appInfo = await getAppInfo();
   final tagInfo =
       await TagInfoService.create().then((value) => value.getInfo());
   final deviceInfo =
@@ -162,40 +177,53 @@ void main() async {
     return stack;
   };
 
+  if (settings.clearImageCacheOnStartup) {
+    logger.logI('Start up', 'Clearing image cache on startup');
+    await clearImageCache();
+  }
+
   logger.logI('Start up',
       'Initialization done in ${stopwatch.elapsed.inMilliseconds}ms');
   stopwatch.stop();
 
   void run() {
     runApp(
-      BooruLocalization(
-        child: ProviderScope(
-          overrides: [
-            favoriteTagRepoProvider.overrideWithValue(favoriteTagsRepo),
-            searchHistoryRepoProvider.overrideWithValue(searchHistoryRepo),
-            booruFactoryProvider.overrideWithValue(booruFactory),
-            tagInfoProvider.overrideWithValue(tagInfo),
-            settingsRepoProvider.overrideWithValue(settingRepository),
-            settingsProvider.overrideWith(() => SettingsNotifier(settings)),
-            booruConfigRepoProvider.overrideWithValue(booruUserRepo),
-            currentBooruConfigProvider.overrideWith(() =>
-                CurrentBooruConfigNotifier(
-                    initialConfig: initialConfig ?? BooruConfig.empty)),
-            globalBlacklistedTagRepoProvider
-                .overrideWithValue(globalBlacklistedTags),
-            httpCacheDirProvider.overrideWithValue(tempPath),
-            loggerProvider.overrideWithValue(logger),
-            bookmarkRepoProvider.overrideWithValue(bookmarkRepo),
-            downloadNotificationProvider
-                .overrideWithValue(downloadNotifications),
-            deviceInfoProvider.overrideWithValue(deviceInfo),
-            danbooruUserMetatagRepoProvider.overrideWithValue(userMetatagRepo),
-            packageInfoProvider.overrideWithValue(packageInfo),
-            appInfoProvider.overrideWithValue(appInfo),
-            uiLoggerProvider.overrideWithValue(uiLogger),
-            supportedLanguagesProvider.overrideWithValue(supportedLanguages),
-          ],
-          child: App(settings: settings),
+      Reboot(
+        initialConfig: initialConfig ?? BooruConfig.empty,
+        builder: (context, config) => BooruLocalization(
+          child: ProviderScope(
+            overrides: [
+              favoriteTagRepoProvider.overrideWithValue(favoriteTagsRepo),
+              searchHistoryRepoProvider.overrideWithValue(searchHistoryRepo),
+              booruFactoryProvider.overrideWithValue(booruFactory),
+              tagInfoProvider.overrideWithValue(tagInfo),
+              settingsRepoProvider.overrideWithValue(settingRepository),
+              settingsProvider.overrideWith(() => SettingsNotifier(settings)),
+              booruConfigRepoProvider.overrideWithValue(booruUserRepo),
+              currentBooruConfigProvider.overrideWith(
+                  () => CurrentBooruConfigNotifier(initialConfig: config)),
+              globalBlacklistedTagRepoProvider
+                  .overrideWithValue(globalBlacklistedTags),
+              httpCacheDirProvider.overrideWithValue(tempPath),
+              loggerProvider.overrideWithValue(logger),
+              bookmarkRepoProvider.overrideWithValue(bookmarkRepo),
+              downloadNotificationProvider
+                  .overrideWithValue(downloadNotifications),
+              deviceInfoProvider.overrideWithValue(deviceInfo),
+              danbooruUserMetatagRepoProvider
+                  .overrideWithValue(userMetatagRepo),
+              packageInfoProvider.overrideWithValue(packageInfo),
+              appInfoProvider.overrideWithValue(appInfo),
+              uiLoggerProvider.overrideWithValue(uiLogger),
+              supportedLanguagesProvider.overrideWithValue(supportedLanguages),
+              danbooruCreatorHiveBoxProvider
+                  .overrideWithValue(danbooruCreatorBox),
+            ],
+            child: App(
+              appName: appInfo.appName,
+              initialSettings: settings,
+            ),
+          ),
         ),
       ),
     );
@@ -204,16 +232,43 @@ void main() async {
   run();
 }
 
-class DioProvider {
-  DioProvider(
-    this.dir,
-    this.generator,
-    this.loggerService,
-  );
+class Reboot extends StatefulWidget {
+  const Reboot({
+    super.key,
+    required this.initialConfig,
+    required this.builder,
+  });
 
-  final Directory dir;
-  final UserAgentGenerator generator;
-  final LoggerService loggerService;
+  final BooruConfig initialConfig;
 
-  Dio getDio(String? baseUrl) => dio(dir, baseUrl, generator, loggerService);
+  final Widget Function(BuildContext context, BooruConfig config) builder;
+
+  @override
+  State<Reboot> createState() => _RebootState();
+
+  static start(BuildContext context, BooruConfig newInitialConfig) {
+    context
+        .findAncestorStateOfType<_RebootState>()!
+        .restartApp(newInitialConfig);
+  }
+}
+
+class _RebootState extends State<Reboot> {
+  Key _key = UniqueKey();
+  late var _config = widget.initialConfig;
+
+  void restartApp(BooruConfig config) {
+    setState(() {
+      _config = config;
+      _key = UniqueKey();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return KeyedSubtree(
+      key: _key,
+      child: widget.builder(context, _config),
+    );
+  }
 }
