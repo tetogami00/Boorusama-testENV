@@ -18,6 +18,7 @@ final e621NoteRepoProvider =
         .then((value) => value.map(e621NoteDtoToE621Note).toList())
         .then((value) => value.map(e621NoteToNote).toList())
         .catchError((_) => <Note>[]),
+    create: (postId, x, y, width, height, body) async {},
   );
 });
 

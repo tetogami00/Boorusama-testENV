@@ -20,6 +20,16 @@ final danbooruNoteRepoProvider =
           limit: _notesLimit,
         )
         .then((value) => value.map((e) => e.toEntity()).toList()),
+    create: (postId, x, y, width, height, body) {
+      return client.createNote(
+        postId: postId,
+        x: x,
+        y: y,
+        width: width,
+        height: height,
+        body: body,
+      );
+    },
   );
 });
 
