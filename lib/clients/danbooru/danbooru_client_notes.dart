@@ -26,7 +26,7 @@ mixin DanbooruClientNotes {
         .toList();
   }
 
-  Future<void> createNote({
+  Future<NoteDto> createNote({
     required int postId,
     required int x,
     required int y,
@@ -34,7 +34,7 @@ mixin DanbooruClientNotes {
     required int height,
     required String body,
   }) async {
-    await dio.post(
+    final response = await dio.post(
       '/notes.json',
       data: {
         'note[post_id]': postId,
@@ -49,5 +49,7 @@ mixin DanbooruClientNotes {
         contentType: Headers.formUrlEncodedContentType,
       ),
     );
+
+    return NoteDto.fromJson(response.data);
   }
 }
