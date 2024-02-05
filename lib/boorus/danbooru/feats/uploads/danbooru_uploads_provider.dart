@@ -20,7 +20,7 @@ final danbooruUploadRepoProvider =
 final danbooruUploadHideBoxProvider =
     FutureProvider.family<Box<String>, BooruConfig>((ref, config) async {
   final box = await Hive.openBox<String>(
-    '${config.booruId}_${config.login ?? "?"}_hide_uploads_v1',
+    '${Uri.encodeComponent(config.url)}_hide_uploads_v1',
   );
 
   return box;
