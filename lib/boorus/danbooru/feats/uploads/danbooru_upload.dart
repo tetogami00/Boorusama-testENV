@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 
 // Project imports:
 import 'package:boorusama/boorus/danbooru/feats/posts/posts.dart';
+import 'package:boorusama/boorus/danbooru/feats/users/users.dart';
 import 'package:boorusama/clients/danbooru/danbooru_client.dart';
 import 'package:boorusama/clients/danbooru/danbooru_client_uploads.dart';
 import 'package:boorusama/clients/danbooru/types/types.dart';
@@ -21,6 +22,7 @@ class DanbooruUpload extends Equatable {
   final int mediaAssetCount;
   final List<UploadMediaAssetsDto> mediaAssets;
   final List<DanbooruPost> posts;
+  final User? uploader;
 
   const DanbooruUpload({
     required this.id,
@@ -34,6 +36,7 @@ class DanbooruUpload extends Equatable {
     required this.mediaAssetCount,
     required this.mediaAssets,
     required this.posts,
+    required this.uploader,
   });
 
   @override
@@ -91,6 +94,7 @@ class DanbooruUploadRepository {
           posts: e.posts?.map((e) => postDtoToPost(e)).toList() ??
               <DanbooruPost>[],
           mediaAssets: e.uploadMediaAssets ?? <UploadMediaAssetsDto>[],
+          uploader: e.uploader != null ? userDtoToUser(e.uploader!) : null,
         );
       },
     ).toList();

@@ -13,6 +13,7 @@ class UploadDto {
   final int? mediaAssetCount;
   final List<UploadMediaAssetsDto>? uploadMediaAssets;
   final List<PostDto>? posts;
+  final UserDto? uploader;
 
   UploadDto({
     this.id,
@@ -26,6 +27,7 @@ class UploadDto {
     this.mediaAssetCount,
     this.uploadMediaAssets,
     this.posts,
+    this.uploader,
   });
 
   factory UploadDto.fromJson(Map<String, dynamic> json) {
@@ -49,6 +51,9 @@ class UploadDto {
       posts: (json['posts'] as List?)
           ?.map((e) => PostDto.fromJson(e as Map<String, dynamic>))
           .toList(),
+      uploader: json['uploader'] == null
+          ? null
+          : UserDto.fromJson(json['uploader'] as Map<String, dynamic>),
     );
   }
 }
