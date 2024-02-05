@@ -2,16 +2,19 @@
 import 'package:flutter/material.dart';
 
 // Package imports:
+import 'package:collection/collection.dart';
+import 'package:filesize/filesize.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
 // Project imports:
 import 'package:boorusama/boorus/danbooru/feats/posts/posts.dart';
 import 'package:boorusama/boorus/danbooru/feats/uploads/uploads.dart';
-import 'package:boorusama/boorus/danbooru/feats/users/users.dart';
 import 'package:boorusama/boorus/danbooru/pages/widgets/widgets.dart';
 import 'package:boorusama/boorus/providers.dart';
 import 'package:boorusama/core/feats/boorus/providers.dart';
+import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/core/feats/settings/settings.dart';
 import 'package:boorusama/core/feats/user_level_colors.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
@@ -101,20 +104,6 @@ class _DanbooruMyUploadsPageState extends ConsumerState<DanbooruMyUploadsPage>
   }
 }
 
-final _danbooruUploaderMapProvider = StateProvider<Map<int, User>>((ref) {
-  return {};
-});
-
-typedef _UnpostedData = ({
-  int unPostedCount,
-  int mediaAssetCount,
-});
-
-final _danbooruUnPostedCountMapProvider =
-    StateProvider<Map<int, _UnpostedData>>((ref) {
-  return {};
-});
-
 class DanbooruUploadGrid extends ConsumerStatefulWidget {
   const DanbooruUploadGrid({
     super.key,
@@ -157,37 +146,7 @@ class _DanbooruUploadGridState extends ConsumerState<DanbooruUploadGrid> {
                     },
                   );
 
-          final uploaderMap = ref.read(_danbooruUploaderMapProvider);
-          for (final upload in uploads) {
-            if (upload.uploader != null) {
-              uploaderMap[upload.uploaderId] = upload.uploader!;
-            }
-          }
-
-          final List<DanbooruPost> posts = [];
-
-          final unPostedCountMap = ref.read(_danbooruUnPostedCountMapProvider);
-
-          for (final upload in uploads) {
-            final post = upload.previewPost;
-            posts.add(post);
-
-            if (widget.type == UploadTabType.unposted &&
-                upload.mediaAssetCount != upload.postedCount) {
-              unPostedCountMap[upload.id] = (
-                unPostedCount: upload.mediaAssetCount - upload.postedCount,
-                mediaAssetCount: upload.mediaAssetCount,
-              );
-            }
-          }
-
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            ref.read(_danbooruUploaderMapProvider.notifier).state = uploaderMap;
-            ref.read(_danbooruUnPostedCountMapProvider.notifier).state =
-                unPostedCountMap;
-          });
-
-          return posts;
+          return uploads.map((e) => e.previewPost).whereNotNull().toList();
         },
       ),
       builder: (context, controller, errors) => LayoutBuilder(
@@ -219,11 +178,72 @@ class _DanbooruUploadGridState extends ConsumerState<DanbooruUploadGrid> {
                   ),
                 ),
                 if (widget.type == UploadTabType.unposted)
-                  _buildUnpostedChip(post.id),
+                  _buildUnpostedChip(post),
                 if (post.uploaderId != 0 &&
                     post.uploaderId != widget.userId &&
                     widget.type == UploadTabType.posted)
-                  _buildUploaderChip(context, post.uploaderId),
+                  _buildUploaderChip(context, post),
+                if (post.mediaAssetCount > 1)
+                  _buildCountChip(post)
+                else
+                  Positioned(
+                    bottom: 4,
+                    left: 4,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        post.source.whenWeb(
+                          (source) => Container(
+                            padding: const EdgeInsets.all(4),
+                            margin: const EdgeInsets.all(1),
+                            width: 25,
+                            height: 25,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.7),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(4)),
+                            ),
+                            child: WebsiteLogo(url: source.faviconUrl),
+                          ),
+                          () => const SizedBox.shrink(),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          margin: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.7),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(4)),
+                          ),
+                          child: Text(
+                            filesize(post.fileSize, 1),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          margin: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.7),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(4)),
+                          ),
+                          child: Text(
+                            '${post.width.toInt()}x${post.height.toInt()}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             );
           },
@@ -242,37 +262,29 @@ class _DanbooruUploadGridState extends ConsumerState<DanbooruUploadGrid> {
     );
   }
 
-  Widget _buildUnpostedChip(int postId) {
-    final data = ref.watch(_danbooruUnPostedCountMapProvider)[postId];
-
-    if (data == null) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.15),
-      ),
-      child: RichText(
-        text: TextSpan(
+  Widget _buildCountChip(DanbooruUploadPost post) {
+    return Positioned(
+      top: 4,
+      left: 4,
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.7),
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+        ),
+        child: Row(
           children: [
-            TextSpan(
-              text: '${data.unPostedCount}',
-              style: context.textTheme.bodySmall,
+            const Icon(
+              FontAwesomeIcons.images,
+              color: Colors.white70,
+              size: 16,
             ),
-            TextSpan(
-              text: ' / ',
-              style: context.textTheme.bodySmall,
-            ),
-            TextSpan(
-              text: '${data.mediaAssetCount}',
-              style: context.textTheme.bodySmall,
-            ),
-            TextSpan(
-              text: ' posted',
-              style: context.textTheme.bodySmall,
+            const SizedBox(width: 6),
+            Text(
+              '${post.mediaAssetCount}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
@@ -280,7 +292,49 @@ class _DanbooruUploadGridState extends ConsumerState<DanbooruUploadGrid> {
     );
   }
 
-  Widget _buildUploaderChip(BuildContext context, int uploaderId) {
+  Widget _buildUnpostedChip(DanbooruUploadPost post) {
+    if (post.mediaAssetCount <= 1 || post.postedCount == 0) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      bottom: 0,
+      right: 0,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: 4,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.8),
+        ),
+        child: RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: '${post.postedCount}',
+                style: context.textTheme.bodySmall,
+              ),
+              TextSpan(
+                text: ' / ',
+                style: context.textTheme.bodySmall,
+              ),
+              TextSpan(
+                text: '${post.mediaAssetCount}',
+                style: context.textTheme.bodySmall,
+              ),
+              TextSpan(
+                text: ' posted',
+                style: context.textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUploaderChip(BuildContext context, DanbooruUploadPost post) {
     return Positioned(
       bottom: 4,
       right: 4,
@@ -295,8 +349,7 @@ class _DanbooruUploadGridState extends ConsumerState<DanbooruUploadGrid> {
         ),
         child: Builder(
           builder: (context) {
-            final uploader =
-                ref.watch(_danbooruUploaderMapProvider)[uploaderId];
+            final uploader = post.uploader;
             return uploader != null
                 ? RichText(
                     text: TextSpan(
