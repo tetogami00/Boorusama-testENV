@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:collection/collection.dart';
+import 'package:context_menus/context_menus.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -18,6 +19,7 @@ import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/core/feats/settings/settings.dart';
 import 'package:boorusama/core/feats/user_level_colors.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
+import 'package:boorusama/foundation/error.dart';
 import 'package:boorusama/foundation/theme/theme.dart';
 import 'package:boorusama/functional.dart';
 import 'package:boorusama/widgets/widgets.dart';
@@ -40,6 +42,9 @@ class DanbooruMyUploadsPage extends ConsumerStatefulWidget {
       _DanbooruMyUploadsPageState();
 }
 
+final _danbooruShowUploadHiddenProvider =
+    StateProvider.autoDispose<bool>((ref) => false);
+
 class _DanbooruMyUploadsPageState extends ConsumerState<DanbooruMyUploadsPage>
     with SingleTickerProviderStateMixin {
   late final tabController = TabController(length: 2, vsync: this);
@@ -52,45 +57,69 @@ class _DanbooruMyUploadsPageState extends ConsumerState<DanbooruMyUploadsPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Uploads'),
-      ),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TabBar(
-              controller: tabController,
-              tabAlignment: TabAlignment.start,
-              isScrollable: true,
-              labelStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-              indicatorColor: context.colorScheme.onBackground,
-              labelColor: context.colorScheme.onBackground,
-              unselectedLabelColor:
-                  context.colorScheme.onBackground.withOpacity(0.5),
-              tabs: const [
-                Tab(text: 'Unposted'),
-                Tab(text: 'Posted'),
-              ],
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: TabBarView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  controller: tabController,
-                  children: [
-                    _buildTab(UploadTabType.unposted),
-                    _buildTab(UploadTabType.posted),
-                  ],
-                ),
-              ),
+    return CustomContextMenuOverlay(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('My Uploads'),
+          actions: [
+            BooruPopupMenuButton(
+              onSelected: (value) {
+                switch (value) {
+                  case 'show_hidden':
+                    ref.read(_danbooruShowUploadHiddenProvider.notifier).state =
+                        true;
+                    break;
+                  case 'hide_hidden':
+                    ref.read(_danbooruShowUploadHiddenProvider.notifier).state =
+                        false;
+                    break;
+                }
+              },
+              itemBuilder: {
+                if (!ref.watch(_danbooruShowUploadHiddenProvider))
+                  'show_hidden': const Text('Show hidden')
+                else
+                  'hide_hidden': const Text('Hide hidden'),
+              },
             ),
           ],
+        ),
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TabBar(
+                controller: tabController,
+                tabAlignment: TabAlignment.start,
+                isScrollable: true,
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+                indicatorColor: context.colorScheme.onBackground,
+                labelColor: context.colorScheme.onBackground,
+                unselectedLabelColor:
+                    context.colorScheme.onBackground.withOpacity(0.5),
+                tabs: const [
+                  Tab(text: 'Unposted'),
+                  Tab(text: 'Posted'),
+                ],
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: TabBarView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    controller: tabController,
+                    children: [
+                      _buildTab(UploadTabType.unposted),
+                      _buildTab(UploadTabType.posted),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -150,23 +179,77 @@ class _DanbooruUploadGridState extends ConsumerState<DanbooruUploadGrid> {
         },
       ),
       builder: (context, controller, errors) => LayoutBuilder(
-        builder: (context, constraints) => PostGrid(
-          controller: controller,
-          scrollController: _autoScrollController,
-          itemBuilder: (context, items, index) {
-            final post = items[index];
+          builder: (context, constraints) =>
+              ref.watch(danbooruUploadHideMapProvider).maybeWhen(
+                    data: (data) => _buildGrid(
+                      controller,
+                      settings,
+                      constraints,
+                      errors,
+                      data,
+                    ),
+                    orElse: () => const SizedBox.shrink(),
+                  )),
+    );
+  }
 
-            return Stack(
-              children: [
-                DanbooruImageGridItem(
-                  post: post,
-                  hideOverlay: false,
-                  autoScrollOptions: AutoScrollOptions(
-                    controller: _autoScrollController,
-                    index: index,
+  void _changeVisibility(int id, bool visible) {
+    ref
+        .read(danbooruUploadHideMapProvider.notifier)
+        .changeVisibility(id, visible);
+  }
+
+  Widget _buildGrid(
+    PostGridController<DanbooruUploadPost> controller,
+    Settings settings,
+    BoxConstraints constraints,
+    BooruError? errors,
+    Map<int, bool> hideMap,
+  ) {
+    final showHidden = ref.watch(_danbooruShowUploadHiddenProvider);
+
+    return PostGrid(
+      blacklistedIds: showHidden ? {} : hideMap.keys.toSet(),
+      controller: controller,
+      scrollController: _autoScrollController,
+      itemBuilder: (context, items, index) {
+        final post = items[index];
+        final isHidden = hideMap[post.id] == true;
+
+        return Stack(
+          children: [
+            ContextMenuRegion(
+              contextMenu: GenericContextMenu(
+                buttonConfigs: [
+                  ContextMenuButtonConfig(
+                    'Hide',
+                    onPressed: () {
+                      _changeVisibility(post.id, false);
+                    },
                   ),
-                  enableFav: false,
-                  image: BooruImage(
+                ],
+              ),
+              child: DanbooruImageGridItem(
+                post: post,
+                hideOverlay: false,
+                autoScrollOptions: AutoScrollOptions(
+                  controller: _autoScrollController,
+                  index: index,
+                ),
+                enableFav: false,
+                image: ConditionalParentWidget(
+                  condition: isHidden,
+                  conditionalBuilder: (child) => Stack(
+                    children: [
+                      child,
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.black.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                  child: BooruImage(
                     aspectRatio: post.aspectRatio,
                     imageUrl: post.thumbnailFromSettings(settings),
                     borderRadius: BorderRadius.circular(
@@ -177,88 +260,98 @@ class _DanbooruUploadGridState extends ConsumerState<DanbooruUploadGrid> {
                     // null, // Will cause error sometimes, disabled for now
                   ),
                 ),
-                if (widget.type == UploadTabType.unposted)
-                  _buildUnpostedChip(post),
-                if (post.uploaderId != 0 &&
-                    post.uploaderId != widget.userId &&
-                    widget.type == UploadTabType.posted)
-                  _buildUploaderChip(context, post),
-                if (post.mediaAssetCount > 1)
-                  _buildCountChip(post)
-                else
-                  Positioned(
-                    bottom: 4,
-                    left: 4,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        post.source.whenWeb(
-                          (source) => Container(
-                            padding: const EdgeInsets.all(4),
-                            margin: const EdgeInsets.all(1),
-                            width: 25,
-                            height: 25,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.7),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(4)),
-                            ),
-                            child: WebsiteLogo(url: source.faviconUrl),
-                          ),
-                          () => const SizedBox.shrink(),
+              ),
+            ),
+            if (isHidden)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  onPressed: () {
+                    _changeVisibility(post.id, true);
+                  },
+                  icon: const Icon(Icons.visibility),
+                ),
+              ),
+            if (widget.type == UploadTabType.unposted) _buildUnpostedChip(post),
+            if (post.uploaderId != 0 &&
+                post.uploaderId != widget.userId &&
+                widget.type == UploadTabType.posted)
+              _buildUploaderChip(context, post),
+            if (post.mediaAssetCount > 1)
+              _buildCountChip(post)
+            else
+              Positioned(
+                bottom: 4,
+                left: 4,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    post.source.whenWeb(
+                      (source) => Container(
+                        padding: const EdgeInsets.all(4),
+                        margin: const EdgeInsets.all(1),
+                        width: 25,
+                        height: 25,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(4)),
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          margin: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.7),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(4)),
-                          ),
-                          child: Text(
-                            filesize(post.fileSize, 1),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          margin: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.7),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(4)),
-                          ),
-                          child: Text(
-                            '${post.width.toInt()}x${post.height.toInt()}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
+                        child: WebsiteLogo(url: source.faviconUrl),
+                      ),
+                      () => const SizedBox.shrink(),
                     ),
-                  ),
-              ],
-            );
-          },
-          bodyBuilder: (context, itemBuilder, refreshing, data) {
-            return SliverPostGrid(
-              constraints: constraints,
-              itemBuilder: itemBuilder,
-              refreshing: refreshing,
-              error: errors,
-              data: data,
-              onRetry: () => controller.refresh(),
-            );
-          },
-        ),
-      ),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      margin: const EdgeInsets.all(1),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4)),
+                      ),
+                      child: Text(
+                        filesize(post.fileSize, 1),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      margin: const EdgeInsets.all(1),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4)),
+                      ),
+                      child: Text(
+                        '${post.width.toInt()}x${post.height.toInt()}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
+      bodyBuilder: (context, itemBuilder, refreshing, data) {
+        return SliverPostGrid(
+          constraints: constraints,
+          itemBuilder: itemBuilder,
+          refreshing: refreshing,
+          error: errors,
+          data: data,
+          onRetry: () => controller.refresh(),
+        );
+      },
     );
   }
 
