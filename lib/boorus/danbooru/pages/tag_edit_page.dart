@@ -55,6 +55,11 @@ final danbooruTagEditColorProvider =
   return color;
 });
 
+final selectedTagEditRatingProvider =
+    StateProvider.family.autoDispose<Rating?, Rating?>((ref, rating) {
+  return rating;
+});
+
 class TagEditPage extends ConsumerWidget {
   const TagEditPage({
     super.key,
@@ -67,13 +72,124 @@ class TagEditPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final config = ref.watchConfig;
     final tags = ref.watch(danbooruTagListProvider(config));
+    final initialRating =
+        tags.containsKey(post.id) ? tags[post.id]!.rating : post.rating;
+    final rating = ref.watch(selectedTagEditRatingProvider(initialRating));
 
     return TagEditPageInternal(
       postId: post.id,
       imageUrl: post.url720x720,
       aspectRatio: post.aspectRatio ?? 1,
       tags: tags.containsKey(post.id) ? tags[post.id]!.allTags : post.tags,
-      rating: tags.containsKey(post.id) ? tags[post.id]!.rating : post.rating,
+      submitButtonBuilder: (addedTags, removedTags) => TextButton(
+        onPressed: (addedTags.isNotEmpty ||
+                removedTags.isNotEmpty ||
+                rating != initialRating)
+            ? () {
+                ref
+                    .read(danbooruTagListProvider(ref.readConfig).notifier)
+                    .setTags(
+                      post.id,
+                      addedTags: addedTags,
+                      removedTags: removedTags,
+                      rating: rating != initialRating ? rating : null,
+                    );
+                context.pop();
+              }
+            : null,
+        child: const Text('Submit'),
+      ),
+      ratingSelectorBuilder: () {
+        return TagEditRatingSelectorSection(
+          rating: initialRating,
+          onChanged: (value) {
+            ref
+                .read(selectedTagEditRatingProvider(initialRating).notifier)
+                .state = value;
+          },
+        );
+      },
+    );
+  }
+}
+
+class TagEditUploadPage extends ConsumerWidget {
+  const TagEditUploadPage({
+    super.key,
+    required this.post,
+    required this.onSubmitted,
+  });
+
+  final DanbooruPost post;
+  final void Function() onSubmitted;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final config = ref.watchConfig;
+    final rating = ref.watch(selectedTagEditRatingProvider(null));
+
+    return TagEditPageInternal(
+      postId: post.id,
+      imageUrl: post.url720x720,
+      aspectRatio: post.aspectRatio ?? 1,
+      tags: const [],
+      submitButtonBuilder: (addedTags, removedTags) => TextButton(
+        onPressed: (addedTags.isNotEmpty && rating != null)
+            ? () {
+                print('Submit');
+                onSubmitted();
+                context.pop();
+              }
+            : null,
+        child: const Text('Submit'),
+      ),
+      ratingSelectorBuilder: () {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  Text(
+                    'Rating',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  if (!config.hasStrictSFW)
+                    IconButton(
+                      splashRadius: 20,
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => launchExternalUrlString(_kHowToRateUrl),
+                      icon: const Icon(
+                        FontAwesomeIcons.circleQuestion,
+                        size: 16,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Row(
+              children: [
+                OptionDropDownButton(
+                  alignment: AlignmentDirectional.centerStart,
+                  value: ref.watch(selectedTagEditRatingProvider(null)),
+                  onChanged: (value) => ref
+                      .read(selectedTagEditRatingProvider(null).notifier)
+                      .state = value,
+                  items: [...Rating.values.where((e) => e != Rating.unknown)]
+                      .map(
+                        (value) => DropdownMenuItem(
+                          value: value,
+                          child: Text(value.name.sentenceCase),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -83,16 +199,21 @@ class TagEditPageInternal extends ConsumerStatefulWidget {
     super.key,
     required this.postId,
     required this.tags,
-    required this.rating,
     required this.imageUrl,
     required this.aspectRatio,
+    required this.ratingSelectorBuilder,
+    required this.submitButtonBuilder,
   });
 
   final int postId;
   final String imageUrl;
   final double aspectRatio;
   final List<String> tags;
-  final Rating rating;
+  final Widget Function() ratingSelectorBuilder;
+  final Widget Function(
+    List<String> addedTags,
+    List<String> removedTags,
+  ) submitButtonBuilder;
 
   @override
   ConsumerState<TagEditPageInternal> createState() =>
@@ -101,7 +222,6 @@ class TagEditPageInternal extends ConsumerStatefulWidget {
 
 class _TagEditPageInternalState extends ConsumerState<TagEditPageInternal> {
   late final tags = [...widget.tags];
-  late var rating = widget.rating;
   final toBeAdded = <String>{};
   final toBeRemoved = <String>{};
   TagEditExpandMode? expandMode;
@@ -120,13 +240,6 @@ class _TagEditPageInternalState extends ConsumerState<TagEditPageInternal> {
   );
 
   String? selectedTag;
-
-  final ratingLabels = const [
-    'explicit',
-    'questionable',
-    'sensitive',
-    'general',
-  ];
 
   var viewExpanded = false;
 
@@ -196,24 +309,9 @@ class _TagEditPageInternalState extends ConsumerState<TagEditPageInternal> {
             icon: const Icon(Symbols.arrow_back),
           ),
           actions: [
-            TextButton(
-              onPressed: (toBeAdded.isNotEmpty ||
-                      toBeRemoved.isNotEmpty ||
-                      rating != widget.rating)
-                  ? () {
-                      ref
-                          .read(
-                              danbooruTagListProvider(ref.readConfig).notifier)
-                          .setTags(
-                            widget.postId,
-                            addedTags: toBeAdded.toList(),
-                            removedTags: toBeRemoved.toList(),
-                            rating: rating != widget.rating ? rating : null,
-                          );
-                      context.pop();
-                    }
-                  : null,
-              child: const Text('Submit'),
+            widget.submitButtonBuilder(
+              toBeAdded.toList(),
+              toBeRemoved.toList(),
             ),
           ],
         ),
@@ -257,14 +355,7 @@ class _TagEditPageInternalState extends ConsumerState<TagEditPageInternal> {
                                 controller: scrollController,
                                 slivers: [
                                   SliverToBoxAdapter(
-                                    child: TagEditRatingSelectorSection(
-                                      rating: rating,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          rating = value;
-                                        });
-                                      },
-                                    ),
+                                    child: widget.ratingSelectorBuilder(),
                                   ),
                                   const SliverSizedBox(height: 8),
                                   SliverToBoxAdapter(
@@ -338,14 +429,7 @@ class _TagEditPageInternalState extends ConsumerState<TagEditPageInternal> {
               controller: scrollController,
               slivers: [
                 SliverToBoxAdapter(
-                  child: TagEditRatingSelectorSection(
-                    rating: rating,
-                    onChanged: (value) {
-                      setState(() {
-                        rating = value;
-                      });
-                    },
-                  ),
+                  child: widget.ratingSelectorBuilder(),
                 ),
                 const SliverSizedBox(height: 8),
                 SliverToBoxAdapter(
@@ -663,7 +747,7 @@ class TagEditRatingSelectorSection extends ConsumerWidget {
     required this.onChanged,
   });
 
-  final Rating rating;
+  final Rating? rating;
   final void Function(Rating rating) onChanged;
 
   @override

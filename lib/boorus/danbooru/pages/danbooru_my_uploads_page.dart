@@ -13,6 +13,7 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:boorusama/boorus/danbooru/feats/posts/posts.dart';
 import 'package:boorusama/boorus/danbooru/feats/uploads/uploads.dart';
 import 'package:boorusama/boorus/danbooru/pages/widgets/widgets.dart';
+import 'package:boorusama/boorus/danbooru/router.dart';
 import 'package:boorusama/boorus/providers.dart';
 import 'package:boorusama/core/feats/boorus/providers.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
@@ -230,6 +231,15 @@ class _DanbooruUploadGridState extends ConsumerState<DanbooruUploadGrid> {
                 ],
               ),
               child: DanbooruImageGridItem(
+                onTap: () {
+                  if (widget.type == UploadTabType.unposted) {
+                    goToTagEditUploadPage(
+                      context,
+                      post: post,
+                      onSubmitted: () => controller.refresh(),
+                    );
+                  }
+                },
                 post: post,
                 hideOverlay: false,
                 autoScrollOptions: AutoScrollOptions(

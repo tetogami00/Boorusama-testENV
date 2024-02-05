@@ -529,6 +529,28 @@ void goToTagEditPage(
   }
 }
 
+void goToTagEditUploadPage(
+  BuildContext context, {
+  required DanbooruPost post,
+  required void Function() onSubmitted,
+}) {
+  if (Screen.of(context).size == ScreenSize.small) {
+    context.navigator.push(CupertinoPageRoute(
+      builder: (context) => TagEditUploadPage(
+        post: post,
+        onSubmitted: onSubmitted,
+      ),
+    ));
+  } else {
+    context.navigator.push(MaterialPageRoute(
+      builder: (context) => TagEditUploadPage(
+        post: post,
+        onSubmitted: onSubmitted,
+      ),
+    ));
+  }
+}
+
 void goToMyUploadsPage(BuildContext context, int userId) {
   context.navigator.push(CupertinoPageRoute(
     builder: (_) => DanbooruMyUploadsPage(
