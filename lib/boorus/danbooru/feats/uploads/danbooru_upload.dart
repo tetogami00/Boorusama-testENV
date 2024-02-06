@@ -138,11 +138,15 @@ class DanbooruUploadPost extends DanbooruPost {
     required this.uploader,
     required this.mediaAssetCount,
     required this.postedCount,
+    required this.mediaAssetId,
+    required this.uploadMediaAssetId,
   });
 
   final User? uploader;
   final int mediaAssetCount;
   final int postedCount;
+  final int mediaAssetId;
+  final int uploadMediaAssetId;
 
   int get unPostedCount => mediaAssetCount - postedCount;
 }
@@ -179,7 +183,7 @@ extension DanbooruUploadX on DanbooruUpload {
       height: mediaAsset.imageHeight?.toDouble() ?? 1,
       format: mediaAsset.fileExt ?? '',
       md5: mediaAsset.md5 ?? '',
-      source: PostSource.from(uploadMediaAssets.sourceUrl),
+      source: PostSource.from(uploadMediaAssets.pageUrl),
       createdAt: createdAt,
       score: 0,
       upScore: 0,
@@ -204,6 +208,8 @@ extension DanbooruUploadX on DanbooruUpload {
       uploader: uploader,
       mediaAssetCount: mediaAssetCount,
       postedCount: postedCount,
+      mediaAssetId: mediaAsset.id ?? 0,
+      uploadMediaAssetId: uploadMediaAssets.id ?? 0,
     );
   }
 }

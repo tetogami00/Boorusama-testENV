@@ -14,6 +14,7 @@ import 'package:multi_split_view/multi_split_view.dart';
 import 'package:boorusama/boorus/booru_builder.dart';
 import 'package:boorusama/boorus/danbooru/danbooru_provider.dart';
 import 'package:boorusama/boorus/danbooru/feats/posts/posts.dart';
+import 'package:boorusama/boorus/danbooru/feats/uploads/uploads.dart';
 import 'package:boorusama/boorus/providers.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
@@ -120,13 +121,35 @@ class TagEditUploadPage extends ConsumerWidget {
     required this.onSubmitted,
   });
 
-  final DanbooruPost post;
+  final DanbooruUploadPost post;
   final void Function() onSubmitted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final config = ref.watchConfig;
     final rating = ref.watch(selectedTagEditRatingProvider(null));
+    final notifier = ref.watch(danbooruPostCreateProvider(config).notifier);
+
+    ref.listen(
+      danbooruPostCreateProvider(config),
+      (previous, next) {
+        next.when(
+          data: (data) {
+            if (data != null) {
+              onSubmitted();
+              context.pop();
+            }
+          },
+          loading: () {},
+          error: (error, stackTrace) {
+            showErrorToast(
+              error.toString(),
+              duration: const Duration(seconds: 3),
+            );
+          },
+        );
+      },
+    );
 
     return TagEditPageInternal(
       postId: post.id,
@@ -134,15 +157,45 @@ class TagEditUploadPage extends ConsumerWidget {
       aspectRatio: post.aspectRatio ?? 1,
       tags: const [],
       submitButtonBuilder: (addedTags, removedTags) => TextButton(
-        onPressed: (addedTags.isNotEmpty && rating != null)
-            ? () {
-                print('Submit');
-                onSubmitted();
-                context.pop();
-              }
-            : null,
+        onPressed:
+            (addedTags.isNotEmpty && rating != null && post.source.url != null)
+                ? ref.watch(danbooruPostCreateProvider(config)).maybeWhen(
+                      loading: () => null,
+                      orElse: () => () {
+                        notifier.create(
+                          mediaAssetId: post.mediaAssetId,
+                          uploadMediaAssetId: post.uploadMediaAssetId,
+                          rating: rating,
+                          source: post.source.url!,
+                          tags: addedTags,
+                        );
+                      },
+                    )
+                : null,
         child: const Text('Submit'),
       ),
+      sourceBuilder: () {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AutofillGroup(
+              child: BooruTextFormField(
+                initialValue: post.source.url,
+                readOnly: true,
+                autocorrect: false,
+                keyboardType: TextInputType.url,
+                autofillHints: const [
+                  AutofillHints.url,
+                ],
+                validator: (p0) => null,
+                decoration: const InputDecoration(
+                  labelText: 'Source',
+                ),
+              ),
+            )
+          ],
+        );
+      },
       ratingSelectorBuilder: () {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -203,6 +256,7 @@ class TagEditPageInternal extends ConsumerStatefulWidget {
     required this.aspectRatio,
     required this.ratingSelectorBuilder,
     required this.submitButtonBuilder,
+    this.sourceBuilder,
   });
 
   final int postId;
@@ -214,6 +268,8 @@ class TagEditPageInternal extends ConsumerStatefulWidget {
     List<String> addedTags,
     List<String> removedTags,
   ) submitButtonBuilder;
+
+  final Widget Function()? sourceBuilder;
 
   @override
   ConsumerState<TagEditPageInternal> createState() =>
@@ -431,6 +487,11 @@ class _TagEditPageInternalState extends ConsumerState<TagEditPageInternal> {
                 SliverToBoxAdapter(
                   child: widget.ratingSelectorBuilder(),
                 ),
+                const SliverSizedBox(height: 8),
+                if (widget.sourceBuilder != null)
+                  SliverToBoxAdapter(
+                    child: widget.sourceBuilder!(),
+                  ),
                 const SliverSizedBox(height: 8),
                 SliverToBoxAdapter(
                   child: _buildTagListSection(),

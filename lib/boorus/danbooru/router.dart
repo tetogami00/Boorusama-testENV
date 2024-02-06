@@ -17,6 +17,7 @@ import 'package:boorusama/boorus/danbooru/feats/pools/pools.dart';
 import 'package:boorusama/boorus/danbooru/feats/posts/posts.dart';
 import 'package:boorusama/boorus/danbooru/feats/saved_searches/saved_searches.dart';
 import 'package:boorusama/boorus/danbooru/feats/tags/tags.dart';
+import 'package:boorusama/boorus/danbooru/feats/uploads/uploads.dart';
 import 'package:boorusama/core/feats/blacklists/blacklists.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
 import 'package:boorusama/core/feats/tags/tags.dart';
@@ -531,7 +532,7 @@ void goToTagEditPage(
 
 void goToTagEditUploadPage(
   BuildContext context, {
-  required DanbooruPost post,
+  required DanbooruUploadPost post,
   required void Function() onSubmitted,
 }) {
   if (Screen.of(context).size == ScreenSize.small) {
