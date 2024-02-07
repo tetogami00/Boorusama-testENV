@@ -52,6 +52,7 @@ import 'pages/pool_search_page.dart';
 import 'pages/saved_search_feed_page.dart';
 import 'pages/saved_search_page.dart';
 import 'pages/tag_edit_page.dart';
+import 'pages/tag_edit_upload_page.dart';
 import 'pages/user_details_page.dart';
 import 'pages/widgets/favorites/create_favorite_group_dialog.dart';
 import 'pages/widgets/saved_searches/edit_saved_search_sheet.dart';

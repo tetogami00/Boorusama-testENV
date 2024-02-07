@@ -38,6 +38,11 @@ typedef DanbooruReportDataParams = ({
   int uploadCount,
 });
 
+typedef DanbooruCopyrightDataParams = ({
+  String username,
+  int uploadCount,
+});
+
 final userDataProvider = FutureProvider.family<List<DanbooruReportDataPoint>,
     DanbooruReportDataParams>((ref, params) async {
   final tag = params.tag;
@@ -58,7 +63,9 @@ final userDataProvider = FutureProvider.family<List<DanbooruReportDataPoint>,
 });
 
 final userCopyrightDataProvider =
-    FutureProvider.family<RelatedTag, String>((ref, username) async {
+    FutureProvider.family<RelatedTag, DanbooruCopyrightDataParams>(
+        (ref, params) async {
+  final username = params.username;
   final config = ref.watchConfig;
   return ref.watch(danbooruRelatedTagRepProvider(config)).getRelatedTag(
         'user:$username',
@@ -205,9 +212,10 @@ class UserDetailsPage extends ConsumerWidget {
                               ),
                               const SizedBox(height: 4),
                               ref
-                                  .watch(userCopyrightDataProvider(
-                                    user.name,
-                                  ))
+                                  .watch(userCopyrightDataProvider((
+                                    username: username,
+                                    uploadCount: user.uploadCount,
+                                  )))
                                   .maybeWhen(
                                     data: (data) => _buildTags(
                                       data.tags.take(5).toList(),
