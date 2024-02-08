@@ -23,6 +23,7 @@ import 'package:boorusama/core/feats/tags/tags.dart';
 import 'package:boorusama/core/router.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
 import 'package:boorusama/flutter.dart';
+import 'package:boorusama/foundation/package_info.dart';
 import 'package:boorusama/foundation/platform.dart';
 import 'package:boorusama/foundation/theme/theme.dart';
 import 'package:boorusama/functional.dart';
@@ -132,16 +133,18 @@ class UserDetailsPage extends ConsumerWidget {
                       if (isSelf)
                         Wrap(
                           children: [
-                            FilledButton(
-                              style: FilledButton.styleFrom(
-                                backgroundColor:
-                                    context.colorScheme.secondaryContainer,
-                                foregroundColor:
-                                    context.colorScheme.onSecondaryContainer,
+                            if (ref.watch(isDevEnvironmentProvider))
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor:
+                                      context.colorScheme.secondaryContainer,
+                                  foregroundColor:
+                                      context.colorScheme.onSecondaryContainer,
+                                ),
+                                child: const Text('My Uploads'),
+                                onPressed: () =>
+                                    goToMyUploadsPage(context, uid),
                               ),
-                              child: const Text('My Uploads'),
-                              onPressed: () => goToMyUploadsPage(context, uid),
-                            ),
                             const SizedBox(width: 8),
                             FilledButton(
                               style: FilledButton.styleFrom(
