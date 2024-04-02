@@ -16,7 +16,11 @@ class TagTitleName extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.only(
+        top: 20,
+        left: 16,
+        right: 16,
+      ),
       child: Text(
         tagName.replaceUnderscoreWithSpace(),
         textAlign: TextAlign.center,

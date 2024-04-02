@@ -2,6 +2,8 @@
 import 'dart:math';
 
 // Flutter imports:
+import 'package:boorusama/core/pages/tag_subscription_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -113,6 +115,15 @@ class SideBarMenu extends ConsumerWidget {
                               null,
                               ref: ref,
                             );
+                          },
+                        ),
+                        SideMenuTile(
+                          icon: const Icon(Symbols.subscriptions),
+                          title: const Text('Tag subscriptions'),
+                          onTap: () {
+                            context.navigator.push(CupertinoPageRoute(
+                              builder: (context) => const TagSubscriptionPage(),
+                            ));
                           },
                         ),
                         const Divider(),
