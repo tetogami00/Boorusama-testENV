@@ -17,23 +17,25 @@ class PostDto {
   final String? source;
   final int? score;
   final String? author;
+  final int? fileSize;
 
   PostDto({
-    this.id,
-    this.md5,
-    this.fileName,
-    this.fileUrl,
-    this.height,
-    this.width,
-    this.previewUrl,
-    this.previewHeight,
-    this.previewWidth,
-    this.rating,
-    this.date,
-    this.tags,
-    this.source,
-    this.score,
-    this.author,
+    required this.id,
+    required this.md5,
+    required this.fileName,
+    required this.fileUrl,
+    required this.height,
+    required this.width,
+    required this.previewUrl,
+    required this.previewHeight,
+    required this.previewWidth,
+    required this.rating,
+    required this.date,
+    required this.tags,
+    required this.source,
+    required this.score,
+    required this.author,
+    required this.fileSize,
   });
 
   factory PostDto.fromXml(
@@ -62,6 +64,7 @@ class PostDto {
       source: xml.getAttribute('source'),
       score: int.tryParse(xml.getAttribute('score') ?? ''),
       author: xml.getAttribute('author'),
+      fileSize: null,
     );
   }
 

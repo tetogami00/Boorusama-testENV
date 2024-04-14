@@ -6,9 +6,10 @@ import 'package:dio/dio.dart';
 import 'package:xml/xml.dart';
 
 // Project imports:
+import 'common.dart';
 import 'types/types.dart';
 
-class Shimmie2Client {
+class Shimmie2Client with Shimmie2ClientCommon {
   Shimmie2Client({
     Dio? dio,
     required String baseUrl,
@@ -41,37 +42,8 @@ class Shimmie2Client {
     );
   }
 
-  Future<List<AutocompleteDto>> getAutocomplete({
-    required String query,
-  }) async {
-    if (query.isEmpty) return [];
-
-    final response = await _dio.get(
-      '/api/internal/autocomplete',
-      queryParameters: {
-        's': query,
-      },
-    );
-
-    try {
-      return switch (response.data) {
-        Map m => m.entries
-            .map((e) => AutocompleteDto(
-                  value: e.key,
-                  count: switch (e.value) {
-                    int n => n,
-                    Map m => _parseCount(m['count']),
-                    _ => throw Exception(
-                        'Failed to parse autocomplete count, unknown type >> ${e.value}'),
-                  },
-                ))
-            .toList(),
-        _ => const [],
-      };
-    } catch (e) {
-      throw Exception('Failed to parse autocomplete >> $e >> ${response.data}');
-    }
-  }
+  @override
+  Dio get dio => _dio;
 }
 
 FutureOr<List<PostDto>> _parsePosts(
@@ -89,10 +61,3 @@ FutureOr<List<PostDto>> _parsePosts(
   }
   return dtos;
 }
-
-int? _parseCount(dynamic value) => switch (value) {
-      null => null,
-      String s => int.tryParse(s),
-      int n => n,
-      _ => null,
-    };

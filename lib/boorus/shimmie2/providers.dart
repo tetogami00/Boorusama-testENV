@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Project imports:
 import 'package:boorusama/boorus/providers.dart';
 import 'package:boorusama/clients/shimmie2/shimmie2_client.dart';
+import 'package:boorusama/clients/shimmie2/shimmie2_graphql_client.dart';
 import 'package:boorusama/core/feats/autocompletes/autocompletes.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
@@ -12,12 +13,19 @@ import 'package:boorusama/foundation/path.dart';
 
 final shimmie2ClientProvider = Provider.family<Shimmie2Client, BooruConfig>(
   (ref, config) {
-    final dio = newDio(ref.watch(dioArgsProvider(config)));
+    final args = ref.watch(dioArgsProvider(config));
+    final dio = newDio(args);
+    final booru = args.booruFactory.getBooruFromUrl(args.baseUrl);
 
-    return Shimmie2Client(
-      dio: dio,
-      baseUrl: config.url,
-    );
+    return booru?.supportsGraphql(args.baseUrl) == true
+        ? Shimmie2GraphqlClient(
+            dio: dio,
+            baseUrl: config.url,
+          )
+        : Shimmie2Client(
+            dio: dio,
+            baseUrl: config.url,
+          );
   },
 );
 

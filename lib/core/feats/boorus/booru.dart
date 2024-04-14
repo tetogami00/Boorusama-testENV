@@ -91,6 +91,13 @@ extension BooruX on Booru {
         Szurubooru _ => kSzurubooruId,
       };
 
+  bool supportsGraphql(String url) => switch (this) {
+        Shimmie2 s =>
+          s.sites.firstWhereOrNull((e) => url.contains(e.url))?.graphql ??
+              false,
+        _ => false,
+      };
+
   bool hasSite(String url) => switch (this) {
         Danbooru d => d.sites.any((e) => e.url == url),
         Gelbooru g => g.sites.contains(url),
@@ -101,7 +108,7 @@ extension BooruX on Booru {
         Zerochan z => z.sites.contains(url),
         Sankaku s => s.sites.contains(url),
         Philomena p => p.sites.contains(url),
-        Shimmie2 s => s.sites.contains(url),
+        Shimmie2 s => s.sites.any((e) => e.url == url),
         Szurubooru s => s.sites.contains(url),
       };
 
@@ -161,6 +168,11 @@ typedef DanbooruSite = ({
 typedef GelbooruV2Site = ({
   String url,
   String? apiUrl,
+});
+
+typedef Shimmie2Site = ({
+  String url,
+  bool graphql,
 });
 
 final class Danbooru extends Booru {
@@ -403,14 +415,26 @@ class Shimmie2 extends Booru {
   });
 
   factory Shimmie2.from(String name, dynamic data) {
+    final sites = <Shimmie2Site>[];
+
+    for (final item in data['sites']) {
+      final url = item['url'] as String;
+      final graphql = item['graphql'] as bool?;
+
+      sites.add((
+        url: url,
+        graphql: graphql ?? false,
+      ));
+    }
+
     return Shimmie2(
       name: name,
       protocol: _parseProtocol(data['protocol']),
-      sites: List.from(data['sites']),
+      sites: sites,
     );
   }
 
-  final List<String> sites;
+  final List<Shimmie2Site> sites;
 }
 
 class Szurubooru extends Booru {

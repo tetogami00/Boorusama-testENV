@@ -81,4 +81,5 @@
 - shimmie2:
     protocol: https_1
     sites:
-      - https://rule34.paheal.net/
+      - url: https://rule34.paheal.net/
+        graphql: true
