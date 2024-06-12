@@ -22,18 +22,21 @@ import 'package:boorusama/boorus/sankaku/sankaku.dart';
 import 'package:boorusama/boorus/shimmie2/providers.dart';
 import 'package:boorusama/boorus/zerochan/zerochan.dart';
 import 'package:boorusama/clients/gelbooru/gelbooru_client.dart';
+import 'package:boorusama/core/configs/manage/providers.dart';
+import 'package:boorusama/core/downloads/downloads.dart';
 import 'package:boorusama/core/feats/autocompletes/autocompletes.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
-import 'package:boorusama/core/feats/downloads/downloads.dart';
 import 'package:boorusama/core/feats/notes/notes.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/core/feats/settings/settings.dart';
 import 'package:boorusama/core/feats/tags/tags.dart';
+import 'package:boorusama/core/home/home.dart';
 import 'package:boorusama/core/pages/post_statistics_page.dart';
 import 'package:boorusama/core/router.dart';
 import 'package:boorusama/core/scaffolds/scaffolds.dart';
 import 'package:boorusama/core/utils.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
+import 'package:boorusama/foundation/display.dart';
 import 'package:boorusama/foundation/gestures.dart';
 import 'package:boorusama/foundation/theme/theme.dart';
 import 'package:boorusama/functional.dart';
@@ -63,6 +66,8 @@ abstract class BooruBuilder {
   ArtistPageBuilder? get artistPageBuilder;
   CharacterPageBuilder? get characterPageBuilder;
   CommentPageBuilder? get commentPageBuilder;
+
+  HomeViewBuilder get homeViewBuilder;
 
   GridThumbnailUrlBuilder get gridThumbnailUrlBuilder;
 

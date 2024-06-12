@@ -1,43 +1,56 @@
 part of 'details_page.dart';
 
+enum PageDirection {
+  next,
+  previous,
+}
+
 class DetailsPageController extends ChangeNotifier {
   DetailsPageController({
     bool swipeDownToDismiss = true,
     bool hideOverlay = false,
+    int initialPage = 0,
   })  : _enableSwipeDownToDismiss = swipeDownToDismiss,
+        currentPage = ValueNotifier(initialPage),
         _hideOverlay = ValueNotifier(hideOverlay);
 
   var _enableSwipeDownToDismiss = false;
 
   var _enablePageSwipe = true;
-  final _slideShow = ValueNotifier((false, <int>[]));
+  final _slideshow = ValueNotifier<bool>(false);
   late final ValueNotifier<bool> _hideOverlay;
 
   bool get swipeDownToDismiss => _enableSwipeDownToDismiss;
   bool get pageSwipe => _enablePageSwipe;
   ValueNotifier<bool> get hideOverlay => _hideOverlay;
-  ValueNotifier<(bool, List<int>)> get slideShow => _slideShow;
+  ValueNotifier<bool> get slideshow => _slideshow;
 
-  void toggleSlideShow() {
-    if (_slideShow.value.$1) {
-      stopSlideShow();
-    } else {
-      startSlideShow();
-    }
+  // use stream event to change to next page or previous page
+  final StreamController<PageDirection> _pageController =
+      StreamController<PageDirection>.broadcast();
+
+  Stream<PageDirection> get pageStream => _pageController.stream;
+
+  late final ValueNotifier<int> currentPage;
+
+  void nextPage() {
+    _pageController.add(PageDirection.next);
   }
 
-  void startSlideShow({
-    List<int>? skipIndexes,
-  }) {
-    _slideShow.value = (true, skipIndexes ?? <int>[]);
+  void previousPage() {
+    _pageController.add(PageDirection.previous);
+  }
+
+  void startSlideshow() {
+    _slideshow.value = true;
     disablePageSwipe();
     disableSwipeDownToDismiss();
     if (!_hideOverlay.value) setHideOverlay(true);
     notifyListeners();
   }
 
-  void stopSlideShow() {
-    _slideShow.value = (false, <int>[]);
+  void stopSlideshow() {
+    _slideshow.value = false;
     enablePageSwipe();
     enableSwipeDownToDismiss();
     setHideOverlay(false);
@@ -80,5 +93,11 @@ class DetailsPageController extends ChangeNotifier {
   void toggleOverlay() {
     _hideOverlay.value = !_hideOverlay.value;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _pageController.close();
+    super.dispose();
   }
 }

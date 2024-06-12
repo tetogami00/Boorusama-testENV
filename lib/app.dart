@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 // Package imports:
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,14 +17,15 @@ import 'package:boorusama/foundation/analytics.dart';
 import 'package:boorusama/foundation/device_info_service.dart';
 import 'package:boorusama/foundation/error.dart';
 import 'package:boorusama/foundation/i18n.dart';
+import 'package:boorusama/foundation/picker.dart';
 import 'package:boorusama/foundation/platform.dart';
+import 'package:boorusama/foundation/scrolling.dart';
 import 'package:boorusama/foundation/theme/theme.dart';
 import 'package:boorusama/router.dart';
 import 'package:boorusama/string.dart';
 import 'package:boorusama/widgets/widgets.dart';
 import 'widgets/platforms/platforms.dart';
 
-final navigatorKey = GlobalKey<NavigatorState>();
 const kMinSideBarWidth = 62.0;
 
 class App extends StatelessWidget {
@@ -45,35 +45,54 @@ class App extends StatelessWidget {
         child: AnalyticsScope(
           builder: (analyticsEnabled) => ThemeBuilder(
             builder: (theme, themeMode) => RouterBuilder(
-              builder: (context, router) => MaterialApp.router(
-                builder: (context, child) => ConditionalParentWidget(
-                  condition: isDesktopPlatform(),
-                  conditionalBuilder: (child) => WindowTitleBar(
-                    appName: appName,
-                    child: child,
-                  ),
-                  child: Theme(
-                    data: Theme.of(context).copyWith(
-                      iconTheme: Theme.of(context).iconTheme.copyWith(
-                            weight: isWindows() ? 200 : 400,
-                          ),
-                    ),
-                    child: child!,
-                  ),
+              builder: (context, router) => ScrollBehaviorBuilder(
+                builder: (context, behavior) => _buildApp(
+                  theme,
+                  themeMode,
+                  context,
+                  router,
+                  behavior,
                 ),
-                theme: theme,
-                themeMode: themeMode,
-                localizationsDelegates: context.localizationDelegates,
-                supportedLocales: context.supportedLocales,
-                locale: context.locale,
-                debugShowCheckedModeBanner: false,
-                title: appName,
-                routerConfig: router,
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildApp(
+    ThemeData theme,
+    ThemeMode themeMode,
+    BuildContext context,
+    GoRouter router,
+    ScrollBehavior? scrollBehavior,
+  ) {
+    return MaterialApp.router(
+      builder: (context, child) => ConditionalParentWidget(
+        condition: isDesktopPlatform(),
+        conditionalBuilder: (child) => WindowTitleBar(
+          appName: appName,
+          child: child,
+        ),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            iconTheme: Theme.of(context).iconTheme.copyWith(
+                  weight: isWindows() ? 200 : 400,
+                ),
+          ),
+          child: child!,
+        ),
+      ),
+      scrollBehavior: scrollBehavior,
+      theme: theme,
+      themeMode: themeMode,
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+      debugShowCheckedModeBanner: false,
+      title: appName,
+      routerConfig: router,
     );
   }
 }
@@ -201,21 +220,20 @@ class AppFailedToInitialize extends ConsumerWidget {
   Future<void> _saveTo(
     BuildContext context,
     String data,
-  ) async {
-    final selectedDirectory = await FilePicker.platform.getDirectoryPath();
+  ) =>
+      pickDirectoryPathToastOnError(
+        onPick: (path) async {
+          final file = File('$path/boorusama_crash.txt');
+          await file.writeAsString(data);
+          if (!context.mounted) return;
 
-    if (selectedDirectory != null) {
-      final file = File('$selectedDirectory/boorusama_crash.txt');
-      await file.writeAsString(data);
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: Text('Copied'),
-          duration: Duration(seconds: 1),
-        ),
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text('Copied'),
+              duration: Duration(seconds: 1),
+            ),
+          );
+        },
       );
-    }
-  }
 }

@@ -52,7 +52,7 @@ typedef CommentPageBuilder = Widget Function(
 
 typedef PostFetcher = PostsOrError Function(
   int page,
-  List<String> tags,
+  String tags,
 );
 
 typedef AutocompleteFetcher = Future<List<AutocompleteData>> Function(
@@ -103,5 +103,10 @@ typedef PostGestureHandlerBuilder = bool Function(
   WidgetRef ref,
   String? action,
   Post post,
-  DownloadDelegate downloader,
+);
+
+typedef HomeViewBuilder = Widget Function(
+  BuildContext context,
+  BooruConfig config,
+  HomePageController controller,
 );

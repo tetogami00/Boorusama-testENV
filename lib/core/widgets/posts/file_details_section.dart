@@ -13,6 +13,37 @@ import 'package:boorusama/foundation/theme/theme.dart';
 import 'package:boorusama/string.dart';
 import 'package:boorusama/widgets/toast.dart';
 
+class DefaultFileDetailsSection extends StatelessWidget {
+  const DefaultFileDetailsSection({
+    super.key,
+    required this.post,
+    this.uploaderName,
+    this.customDetails,
+  });
+
+  final Post post;
+  final String? uploaderName;
+  final Map<String, Widget>? customDetails;
+
+  @override
+  Widget build(BuildContext context) {
+    return FileDetailsSection(
+      post: post,
+      rating: post.rating,
+      uploader: uploaderName != null
+          ? Text(
+              uploaderName!.replaceAll('_', ' '),
+              maxLines: 1,
+              style: const TextStyle(
+                fontSize: 14,
+              ),
+            )
+          : null,
+      customDetails: customDetails,
+    );
+  }
+}
+
 class FileDetailsSection extends StatelessWidget {
   const FileDetailsSection({
     super.key,
@@ -30,7 +61,7 @@ class FileDetailsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fileSizeText =
-        post.fileSize > 0 ? '• ${filesize(post.fileSize, 1)}' : '';
+        post.fileSize > 0 ? ' • ${filesize(post.fileSize, 1)}' : '';
 
     final resolutionText = post.width > 0 && post.height > 0
         ? '${post.width.toInt()}x${post.height.toInt()} • '

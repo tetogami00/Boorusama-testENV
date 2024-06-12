@@ -12,9 +12,9 @@ import 'package:boorusama/boorus/providers.dart';
 import 'package:boorusama/boorus/sankaku/create_sankaku_config_page.dart';
 import 'package:boorusama/boorus/sankaku/sankaku_home_page.dart';
 import 'package:boorusama/clients/sankaku/sankaku_client.dart';
+import 'package:boorusama/core/downloads/downloads.dart';
 import 'package:boorusama/core/feats/autocompletes/autocompletes.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
-import 'package:boorusama/core/feats/downloads/downloads.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/core/feats/tags/tags.dart';
 import 'package:boorusama/core/router.dart';
@@ -36,6 +36,7 @@ class SankakuBuilder
         CharacterNotSupportedMixin,
         LegacyGranularRatingOptionsBuilderMixin,
         NoGranularRatingQueryBuilderMixin,
+        DefaultHomeMixin,
         DefaultTagColorMixin,
         DefaultPostImageDetailsUrlMixin,
         DefaultPostGesturesHandlerMixin,
@@ -108,7 +109,7 @@ class SankakuBuilder
               post: post,
               showSource: true,
             ),
-            sourceSectionBuilder: (context, post) => const SizedBox.shrink(),
+            parts: kDefaultPostDetailsNoSourceParts,
             sliverArtistPostsBuilder: (context, post) =>
                 post.artistTags.isNotEmpty
                     ? post.artistTags
@@ -146,7 +147,6 @@ class SankakuBuilder
               onTagTap: (tag) => goToSearchPage(context, tag: tag.rawName),
             ),
             onExit: (page) => scrollController?.scrollToIndex(page),
-            onTagTap: (tag) => goToSearchPage(context, tag: tag),
           ),
         );
       };
@@ -175,30 +175,23 @@ class SankakuBuilder
             );
 
   @override
-  DownloadFilenameGenerator get downloadFilenameBuilder =>
+  final DownloadFilenameGenerator downloadFilenameBuilder =
       DownloadFileNameBuilder<SankakuPost>(
-        defaultFileNameFormat: kBoorusamaCustomDownloadFileNameFormat,
-        defaultBulkDownloadFileNameFormat:
-            kBoorusamaBulkDownloadCustomFileNameFormat,
-        sampleData: kDanbooruPostSamples,
-        tokenHandlers: {
-          'id': (post, config) => post.id.toString(),
-          'artist': (post, config) => post.artistTags.join(' '),
-          'character': (post, config) => post.characterTags.join(' '),
-          'copyright': (post, config) => post.copyrightTags.join(' '),
-          'tags': (post, config) => post.tags.join(' '),
-          'extension': (post, config) =>
-              sanitizedExtension(config.downloadUrl).substring(1),
-          'width': (post, config) => post.width.toString(),
-          'height': (post, config) => post.height.toString(),
-          'mpixels': (post, config) => post.mpixels.toString(),
-          'aspect_ratio': (post, config) => post.aspectRatio.toString(),
-          'md5': (post, config) => post.md5,
-          'source': (post, config) => sanitizedUrl(config.downloadUrl),
-          'rating': (post, config) => post.rating.name,
-          'index': (post, config) => config.index?.toString(),
-        },
-      );
+    defaultFileNameFormat: kBoorusamaCustomDownloadFileNameFormat,
+    defaultBulkDownloadFileNameFormat:
+        kBoorusamaBulkDownloadCustomFileNameFormat,
+    sampleData: kDanbooruPostSamples,
+    tokenHandlers: {
+      'artist': (post, config) => post.artistTags.join(' '),
+      'character': (post, config) => post.characterTags.join(' '),
+      'copyright': (post, config) => post.copyrightTags.join(' '),
+      'width': (post, config) => post.width.toString(),
+      'height': (post, config) => post.height.toString(),
+      'mpixels': (post, config) => post.mpixels.toString(),
+      'aspect_ratio': (post, config) => post.aspectRatio.toString(),
+      'source': (post, config) => sanitizedUrl(config.downloadUrl),
+    },
+  );
 }
 
 class SankakuArtistPage extends ConsumerWidget {
@@ -216,10 +209,14 @@ class SankakuArtistPage extends ConsumerWidget {
     return ArtistPageScaffold(
       artistName: artistName,
       fetcher: (page, selectedCategory) =>
-          ref.read(sankakuArtistPostRepo(config)).getPosts([
-        artistName,
-        if (selectedCategory == TagFilterCategory.popular) 'order:score',
-      ], page),
+          ref.read(sankakuArtistPostRepo(config)).getPosts(
+                [
+                  artistName,
+                  if (selectedCategory == TagFilterCategory.popular)
+                    'order:score',
+                ].join(' '),
+                page,
+              ),
     );
   }
 }

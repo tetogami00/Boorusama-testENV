@@ -7,25 +7,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Project imports:
 import 'package:boorusama/boorus/booru_builder.dart';
 import 'package:boorusama/boorus/danbooru/danbooru.dart';
+import 'package:boorusama/boorus/gelbooru/home/home.dart';
 import 'package:boorusama/boorus/gelbooru/posts/posts.dart';
 import 'package:boorusama/boorus/providers.dart';
 import 'package:boorusama/clients/gelbooru/gelbooru_client.dart';
 import 'package:boorusama/clients/gelbooru/types/types.dart';
+import 'package:boorusama/core/downloads/downloads.dart';
 import 'package:boorusama/core/feats/autocompletes/autocompletes.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
-import 'package:boorusama/core/feats/downloads/downloads.dart';
 import 'package:boorusama/core/feats/notes/notes.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/core/feats/tags/tags.dart';
 import 'package:boorusama/core/feats/utils.dart';
 import 'package:boorusama/core/scaffolds/scaffolds.dart';
+import 'package:boorusama/core/widgets/posts/post_details_page_mixin.dart';
 import 'package:boorusama/foundation/networking/networking.dart';
-import 'package:boorusama/foundation/path.dart';
 import 'package:boorusama/functional.dart';
 import 'artists/gelbooru_artist_page.dart';
 import 'comments/gelbooru_comment_page.dart';
-import 'create_gelbooru_config_page.dart';
-import 'home/gelbooru_home_page.dart';
+import 'configs/create_gelbooru_config_page.dart';
 import 'posts/gelbooru_post_details_desktop_page.dart';
 import 'posts/gelbooru_post_details_page.dart';
 
@@ -33,6 +33,10 @@ export 'posts/posts.dart';
 
 const kGelbooruCustomDownloadFileNameFormat =
     '{id}_{md5:maxlength=8}.{extension}';
+
+String getGelbooruProfileUrl(String url) => url.endsWith('/')
+    ? '${url}index.php?page=account&s=options'
+    : '$url/index.php?page=account&s=options';
 
 final gelbooruClientProvider =
     Provider.family<GelbooruClient, BooruConfig>((ref, booruConfig) {
@@ -215,18 +219,22 @@ class GelbooruBuilder
 
   @override
   PostDetailsPageBuilder get postDetailsPageBuilder =>
-      (context, booruConfig, payload) => payload.isDesktop
-          ? GelbooruPostDetailsDesktopPage(
-              posts: payload.posts,
-              initialIndex: payload.initialIndex,
-              onExit: (page) => payload.scrollController?.scrollToIndex(page),
-              hasDetailsTagList: booruConfig.booruType.supportTagDetails,
-            )
-          : GelbooruPostDetailsPage(
+      (context, config, payload) => PostDetailsLayoutSwitcher(
+            initialIndex: payload.initialIndex,
+            scrollController: payload.scrollController,
+            desktop: (controller) => GelbooruPostDetailsDesktopPage(
+              initialIndex: controller.currentPage.value,
               posts: payload.posts.map((e) => e as GelbooruPost).toList(),
-              initialIndex: payload.initialIndex,
-              onExit: (page) => payload.scrollController?.scrollToIndex(page),
-            );
+              onExit: (page) => controller.onExit(page),
+              onPageChanged: (page) => controller.setPage(page),
+            ),
+            mobile: (controller) => GelbooruPostDetailsPage(
+              initialIndex: controller.currentPage.value,
+              posts: payload.posts.map((e) => e as GelbooruPost).toList(),
+              onExit: (page) => controller.onExit(page),
+              onPageChanged: (page) => controller.setPage(page),
+            ),
+          );
 
   @override
   FavoritesPageBuilder? get favoritesPageBuilder =>
@@ -288,27 +296,25 @@ class GelbooruBuilder
       };
 
   @override
-  DownloadFilenameGenerator get downloadFilenameBuilder =>
+  final DownloadFilenameGenerator downloadFilenameBuilder =
       DownloadFileNameBuilder(
-        defaultFileNameFormat: kGelbooruCustomDownloadFileNameFormat,
-        defaultBulkDownloadFileNameFormat:
-            kGelbooruCustomDownloadFileNameFormat,
-        sampleData: kDanbooruPostSamples,
-        tokenHandlers: {
-          'id': (post, config) => post.id.toString(),
-          'tags': (post, config) => post.tags.join(' '),
-          'extension': (post, config) =>
-              extension(config.downloadUrl).substring(1),
-          'width': (post, config) => post.width.toString(),
-          'height': (post, config) => post.height.toString(),
-          'mpixels': (post, config) => post.mpixels.toString(),
-          'aspect_ratio': (post, config) => post.aspectRatio.toString(),
-          'md5': (post, config) => post.md5,
-          'source': (post, config) => config.downloadUrl,
-          'rating': (post, config) => post.rating.name,
-          'index': (post, config) => config.index?.toString(),
-        },
-      );
+    defaultFileNameFormat: kGelbooruCustomDownloadFileNameFormat,
+    defaultBulkDownloadFileNameFormat: kGelbooruCustomDownloadFileNameFormat,
+    sampleData: kDanbooruPostSamples,
+    tokenHandlers: {
+      'width': (post, config) => post.width.toString(),
+      'height': (post, config) => post.height.toString(),
+      'mpixels': (post, config) => post.mpixels.toString(),
+      'aspect_ratio': (post, config) => post.aspectRatio.toString(),
+      'source': (post, config) => config.downloadUrl,
+    },
+  );
+
+  @override
+  HomeViewBuilder get homeViewBuilder =>
+      (context, config, controller) => GelbooruMobileHomePage(
+            controller: controller,
+          );
 }
 
 class GelbooruSearchPage extends ConsumerWidget {
@@ -324,10 +330,6 @@ class GelbooruSearchPage extends ConsumerWidget {
     final config = ref.watchConfig;
     return SearchPageScaffold(
       initialQuery: initialQuery,
-      gridBuilder: (context, controller, slivers) => InfinitePostListScaffold(
-        controller: controller,
-        sliverHeaderBuilder: (context) => slivers,
-      ),
       fetcher: (page, tags) =>
           ref.watch(gelbooruPostRepoProvider(config)).getPosts(tags, page),
     );
@@ -350,7 +352,7 @@ class GelbooruFavoritesPage extends ConsumerWidget {
     return FavoritesPageScaffold(
       favQueryBuilder: () => query,
       fetcher: (page) =>
-          ref.read(gelbooruPostRepoProvider(config)).getPosts([query], page),
+          ref.read(gelbooruPostRepoProvider(config)).getPosts(query, page),
     );
   }
 }

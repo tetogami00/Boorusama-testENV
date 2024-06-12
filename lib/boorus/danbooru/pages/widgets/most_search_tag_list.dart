@@ -12,6 +12,7 @@ import 'package:boorusama/core/feats/boorus/boorus.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
 import 'package:boorusama/foundation/theme/theme.dart';
 import 'package:boorusama/string.dart';
+import 'danbooru_tag_context_menu.dart';
 
 class MostSearchTagList extends ConsumerWidget {
   const MostSearchTagList({
@@ -26,29 +27,34 @@ class MostSearchTagList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final config = ref.watchConfig;
-    final asyncData = ref.watch(trendingTagsProvider(config));
 
-    return asyncData.when(
-      data: (searches) => searches.isNotEmpty
-          ? Container(
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              height: 40,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: searches.length,
-                itemBuilder: (context, index) {
-                  return _Chip(
-                    search: searches[index],
-                    isSelected: selected == searches[index].keyword,
-                    onSelected: onSelected,
-                  );
-                },
-              ),
-            )
-          : const SizedBox.shrink(),
-      error: (error, stackTrace) => const SizedBox.shrink(),
-      loading: () => const TagChipsPlaceholder(),
-    );
+    return ref.watch(trendingTagsProvider(config)).when(
+          data: (searches) => searches.isNotEmpty
+              ? SizedBox(
+                  height: 40,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: searches.length,
+                    itemBuilder: (context, index) {
+                      return DanbooruTagContextMenu(
+                        tag: searches[index].keyword,
+                        child: _Chip(
+                          search: searches[index],
+                          isSelected: selected == searches[index].keyword,
+                          onSelected: onSelected,
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : const SizedBox.shrink(),
+          error: (error, stackTrace) => const SizedBox.shrink(),
+          loading: () => const TagChipsPlaceholder(),
+        );
   }
 }
 

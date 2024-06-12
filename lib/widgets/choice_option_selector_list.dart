@@ -34,18 +34,24 @@ class ChoiceOptionSelectorList<T> extends ConsumerStatefulWidget {
     required this.selectedOption,
     this.icon,
     this.onSelected,
-    required this.sheetTitle,
+    this.sheetTitle,
     required this.optionLabelBuilder,
     this.hasNullOption = true,
+    this.searchable = true,
+    this.padding,
+    this.scrollController,
   });
 
   final List<T> options;
   final T? selectedOption;
   final Widget? icon;
   final void Function(T? value)? onSelected;
-  final String sheetTitle;
+  final String? sheetTitle;
   final String Function(T? value) optionLabelBuilder;
   final bool hasNullOption;
+  final bool searchable;
+  final EdgeInsetsGeometry? padding;
+  final AutoScrollController? scrollController;
 
   @override
   ConsumerState<ChoiceOptionSelectorList<T>> createState() =>
@@ -54,7 +60,8 @@ class ChoiceOptionSelectorList<T> extends ConsumerStatefulWidget {
 
 class _ChoiceOptionSelectorListState<T>
     extends ConsumerState<ChoiceOptionSelectorList<T>> {
-  final scrollController = AutoScrollController();
+  late final scrollController =
+      widget.scrollController ?? AutoScrollController();
   late var selectedOption = widget.selectedOption;
 
   @override
@@ -69,13 +76,16 @@ class _ChoiceOptionSelectorListState<T>
   @override
   void dispose() {
     super.dispose();
-    scrollController.dispose();
+
+    if (widget.scrollController == null) {
+      scrollController.dispose();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final options = [
-      const ButtonType(),
+      if (widget.searchable) const ButtonType(),
       if (widget.hasNullOption) null,
       ...widget.options.map((e) => OptionType(data: e)),
     ];
@@ -85,6 +95,7 @@ class _ChoiceOptionSelectorListState<T>
       color: context.colorScheme.surface,
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListView.builder(
+        padding: widget.padding,
         controller: scrollController,
         scrollDirection: Axis.horizontal,
         itemCount: options.length,

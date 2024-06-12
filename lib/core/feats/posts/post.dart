@@ -7,6 +7,19 @@ import 'package:boorusama/core/feats/tags/tags.dart';
 import 'package:boorusama/foundation/image.dart';
 import 'package:boorusama/foundation/video.dart';
 
+class PostMetadata extends Equatable {
+  final int? page;
+  final String? search;
+
+  const PostMetadata({
+    this.page,
+    this.search,
+  });
+
+  @override
+  List<Object?> get props => [page, search];
+}
+
 abstract class Post extends Equatable
     with MediaInfoMixin, ImageInfoMixin, VideoInfoMixin, TagListCheckMixin
     implements TagDetails {
@@ -26,6 +39,8 @@ abstract class Post extends Equatable
   int get score;
   int? get downvotes;
   int? get uploaderId;
+
+  PostMetadata? get metadata;
 
   String getLink(String baseUrl);
   Uri getUriLink(String baseUrl);
@@ -72,6 +87,7 @@ abstract class SimplePost extends Equatable
     required this.width,
     required this.uploaderId,
     this.uploaderName,
+    required this.metadata,
   });
 
   @override
@@ -133,6 +149,9 @@ abstract class SimplePost extends Equatable
   Uri getUriLink(String baseUrl) => Uri.parse(getLink(baseUrl));
 
   @override
+  final PostMetadata? metadata;
+
+  @override
   List<Object?> get props => [id];
 }
 
@@ -167,24 +186,29 @@ extension PostX on Post {
     return tags;
   }
 
+  TagFilterData extractTagFilterData() => TagFilterData(
+        tags: tags,
+        rating: rating,
+        score: score,
+        downvotes: downvotes,
+        uploaderId: uploaderId,
+        source: switch (source) {
+          WebSource w => w.url,
+          NonWebSource nw => nw.value,
+          _ => null,
+        },
+        id: id,
+      );
+
   bool containsTagPattern(List<TagExpression> pattern) =>
       checkIfTagsContainsTagExpression(
-        TagFilterData(
-          tags: tags,
-          rating: rating,
-          score: score,
-          downvotes: downvotes,
-          uploaderId: uploaderId,
-          source: switch (source) {
-            WebSource w => w.url,
-            NonWebSource nw => nw.value,
-            _ => null,
-          },
-        ),
+        extractTagFilterData(),
         pattern,
       );
 
   bool get isExplicit => rating == Rating.explicit;
+
+  String get relationshipQuery => hasParent ? 'parent:$parentId' : 'parent:$id';
 }
 
 enum GeneralPostQualityType {

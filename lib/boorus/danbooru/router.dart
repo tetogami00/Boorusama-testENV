@@ -11,7 +11,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 // Project imports:
-import 'package:boorusama/app.dart';
 import 'package:boorusama/boorus/danbooru/feats/favorites/favorites.dart';
 import 'package:boorusama/boorus/danbooru/feats/pools/pools.dart';
 import 'package:boorusama/boorus/danbooru/feats/posts/posts.dart';
@@ -28,8 +27,8 @@ import 'package:boorusama/core/widgets/widgets.dart';
 import 'package:boorusama/flutter.dart';
 import 'package:boorusama/foundation/display.dart';
 import 'package:boorusama/foundation/i18n.dart';
-import 'package:boorusama/foundation/platform.dart';
 import 'package:boorusama/foundation/theme/theme.dart';
+import 'package:boorusama/router.dart';
 import 'package:boorusama/widgets/widgets.dart';
 import 'pages/add_to_favorite_group_page.dart';
 import 'pages/blacklisted_tags_page.dart';
@@ -65,7 +64,7 @@ void goToPoolDetailPage(BuildContext context, Pool pool) {
 }
 
 void goToPostVersionPage(BuildContext context, DanbooruPost post) {
-  if (isMobilePlatform()) {
+  if (kPreferredLayout.isMobile) {
     showMaterialModalBottomSheet(
       context: context,
       duration: const Duration(milliseconds: 250),
@@ -87,7 +86,7 @@ void goToPostVersionPage(BuildContext context, DanbooruPost post) {
 }
 
 void goToExplorePopularPage(BuildContext context) {
-  if (isMobilePlatform()) {
+  if (kPreferredLayout.isMobile) {
     context.navigator.push(CupertinoPageRoute(
       settings: const RouteSettings(
         name: RouterPageConstant.explorePopular,
@@ -103,23 +102,23 @@ void goToExplorePopularPage(BuildContext context) {
 }
 
 void goToExploreHotPage(BuildContext context) {
-  if (isMobilePlatform()) {
+  if (kPreferredLayout.isMobile) {
     context.navigator.push(CupertinoPageRoute(
       settings: const RouteSettings(
         name: RouterPageConstant.exploreHot,
       ),
-      builder: (_) => ExploreHotPage.routeOf(context),
+      builder: (_) => const ExploreHotPage(),
     ));
   } else {
     showDesktopWindow(
       context,
-      builder: (_) => ExploreHotPage.routeOf(context),
+      builder: (_) => const ExploreHotPage(),
     );
   }
 }
 
 void goToExploreMostViewedPage(BuildContext context) {
-  if (isMobilePlatform()) {
+  if (kPreferredLayout.isMobile) {
     context.navigator.push(CupertinoPageRoute(
       settings: const RouteSettings(
         name: RouterPageConstant.exploreMostViewed,
@@ -141,7 +140,7 @@ void goToSavedSearchPage(BuildContext context, String? username) {
 }
 
 void goToSavedSearchEditPage(BuildContext context) {
-  if (isMobilePlatform()) {
+  if (kPreferredLayout.isMobile) {
     context.navigator.push(CupertinoPageRoute(
       builder: (_) {
         return const SavedSearchPage();
@@ -288,7 +287,7 @@ void goToSavedSearchCreatePage(
   BuildContext context, {
   SavedSearch? initialValue,
 }) {
-  if (isMobilePlatform()) {
+  if (kPreferredLayout.isMobile) {
     showMaterialModalBottomSheet(
       context: context,
       settings: const RouteSettings(
@@ -398,7 +397,7 @@ Future<Object?> goToFavoriteGroupCreatePage(
   return showGeneralDialog(
     context: context,
     pageBuilder: (___, _, __) => EditFavoriteGroupDialog(
-      padding: isMobilePlatform() ? 0 : 8,
+      padding: kPreferredLayout.isMobile ? 0 : 8,
       title: 'favorite_groups.create_group'.tr(),
       enableManualDataInput: enableManualPostInput,
     ),
@@ -413,7 +412,7 @@ Future<Object?> goToFavoriteGroupEditPage(
     context: context,
     pageBuilder: (dialogContext, _, __) => EditFavoriteGroupDialog(
       initialData: group,
-      padding: isMobilePlatform() ? 0 : 8,
+      padding: kPreferredLayout.isMobile ? 0 : 8,
       title: 'favorite_groups.edit_group'.tr(),
     ),
   );

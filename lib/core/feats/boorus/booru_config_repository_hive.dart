@@ -6,8 +6,8 @@ import 'package:collection/collection.dart';
 import 'package:hive/hive.dart';
 
 // Project imports:
+import 'package:boorusama/core/downloads/downloads.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
-import 'package:boorusama/core/feats/downloads/downloads.dart';
 import 'package:boorusama/utils/utils.dart';
 
 class HiveBooruConfigRepository implements BooruConfigRepository {
@@ -35,9 +35,8 @@ class HiveBooruConfigRepository implements BooruConfigRepository {
     final jsonString = jsonEncode(json);
     final id = await box.add(jsonString);
 
-    return convertToBooruConfig(
+    return booruConfigData.toBooruConfig(
       id: id,
-      booruConfigData: booruConfigData,
     );
   }
 
@@ -55,9 +54,8 @@ class HiveBooruConfigRepository implements BooruConfigRepository {
           final json = jsonDecode(jsonString);
           final booruConfigData = BooruConfigData.fromJson(json);
 
-          return convertToBooruConfig(
+          return booruConfigData.toBooruConfig(
             id: castOrNull<int>(e),
-            booruConfigData: booruConfigData,
           );
         })
         .whereNotNull()
@@ -72,9 +70,8 @@ class HiveBooruConfigRepository implements BooruConfigRepository {
     try {
       await box.put(id, jsonString);
 
-      return convertToBooruConfig(
+      return booruConfigData.toBooruConfig(
         id: id,
-        booruConfigData: booruConfigData,
       );
     } catch (e) {
       return null;
@@ -104,6 +101,7 @@ class HiveBooruConfigRepository implements BooruConfigRepository {
             booruConfig.customDownloadFileNameFormat ?? '',
         customBulkDownloadFileNameFormat:
             booruConfig.customBulkDownloadFileNameFormat ?? '',
+        customDownloadLocation: booruConfig.customDownloadLocation,
         imageDetaisQuality: booruConfig.imageDetaisQuality ?? '',
         granularRatingFilterString: granularRatingFilterToString(
           booruConfig.granularRatingFilters,
@@ -116,9 +114,8 @@ class HiveBooruConfigRepository implements BooruConfigRepository {
       final jsonString = jsonEncode(json);
       await box.put(booruConfig.id, jsonString);
 
-      configs.add(convertToBooruConfig(
+      configs.add(data.toBooruConfig(
         id: booruConfig.id,
-        booruConfigData: data,
       )!);
     }
 

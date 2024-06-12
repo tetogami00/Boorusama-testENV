@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/core/feats/settings/settings.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
-import 'package:boorusama/foundation/platform.dart';
+import 'package:boorusama/foundation/display.dart';
 
 final postGridSideBarVisibleProvider = StateProvider<bool>((ref) {
   return false;
@@ -31,7 +31,7 @@ class PostGridConfigRegion extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return !isMobilePlatform()
+    return !kPreferredLayout.isMobile
         ? Builder(
             builder: (context) {
               final gridSize = ref.watch(gridSizeSettingsProvider);
@@ -83,6 +83,9 @@ class PostGridConfigRegion extends ConsumerWidget {
                         elevation: 0,
                         shadowColor: Colors.transparent,
                         child: InkWell(
+                          customBorder: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           onTap: () {
                             ref
                                     .read(postGridSideBarVisibleProvider.notifier)
@@ -94,10 +97,10 @@ class PostGridConfigRegion extends ConsumerWidget {
                           },
                           child: Container(
                             margin: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
+                              horizontal: 6,
+                              vertical: 6,
                             ),
-                            width: 2,
+                            width: 3,
                             height: 32,
                             decoration: BoxDecoration(
                               color: Theme.of(context).dividerColor,

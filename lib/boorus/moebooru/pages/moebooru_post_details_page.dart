@@ -56,11 +56,13 @@ class MoebooruPostDetailsPage extends ConsumerStatefulWidget {
     required this.posts,
     required this.initialPage,
     required this.onExit,
+    required this.onPageChanged,
   });
 
   final List<MoebooruPost> posts;
   final int initialPage;
   final void Function(int page) onExit;
+  final void Function(int page) onPageChanged;
 
   @override
   ConsumerState<MoebooruPostDetailsPage> createState() =>
@@ -105,23 +107,11 @@ class _MoebooruPostDetailsPageState
       posts: posts,
       initialIndex: widget.initialPage,
       onExit: widget.onExit,
-      onTagTap: (tag) => goToSearchPage(
-        context,
-        tag: tag,
-      ),
+      onPageChangeIndexed: widget.onPageChanged,
       swipeImageUrlBuilder: defaultPostImageUrlBuilder(ref),
-      fileDetailsBuilder: (context, post) => FileDetailsSection(
+      fileDetailsBuilder: (context, post) => DefaultFileDetailsSection(
         post: post,
-        rating: post.rating,
-        uploader: post.uploaderName != null
-            ? Text(
-                post.uploaderName!.replaceAll('_', ' '),
-                maxLines: 1,
-                style: const TextStyle(
-                  fontSize: 14,
-                ),
-              )
-            : null,
+        uploaderName: post.uploaderName,
       ),
       sliverRelatedPostsBuilder: (context, post) =>
           MoebooruRelatedPostsSection(post: post),
@@ -226,6 +216,13 @@ class _MoebooruPostDetailsPageState
             SimplePostActionToolbar(post: post);
       },
       commentsBuilder: (context, post) => MoebooruCommentSection(post: post),
+      topRightButtonsBuilder: (currentPage, expanded, post, controller) => [
+        GeneralMoreActionButton(
+          post: post,
+          //FIXME: temporary disable slideshow when user is logged in to prevent server spam
+          onStartSlideshow: null,
+        ),
+      ],
       infoBuilder: (context, post) =>
           ref.watch(moebooruAllTagsProvider(config)).maybeWhen(
                 data: (tags) {

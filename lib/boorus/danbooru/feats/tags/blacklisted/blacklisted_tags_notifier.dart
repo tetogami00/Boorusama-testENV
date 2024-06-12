@@ -4,15 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Project imports:
 import 'package:boorusama/boorus/danbooru/danbooru_provider.dart';
 import 'package:boorusama/boorus/danbooru/feats/users/users.dart';
+import 'package:boorusama/core/feats/blacklists/blacklists.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
 import 'package:boorusama/foundation/i18n.dart';
 import 'package:boorusama/widgets/toast.dart';
 
 class BlacklistedTagsNotifier
-    extends AutoDisposeFamilyAsyncNotifier<List<String>?, BooruConfig> {
+    extends FamilyNotifier<List<String>?, BooruConfig> {
   @override
-  Future<List<String>?> build(BooruConfig arg) async {
-    final user = await ref.read(danbooruCurrentUserProvider(arg).future);
+  List<String>? build(BooruConfig arg) {
+    final user = ref.watch(danbooruCurrentUserProvider(arg)).value;
 
     if (user == null) return null;
 
@@ -20,20 +21,20 @@ class BlacklistedTagsNotifier
   }
 
   Future<void> add({
-    required String tag,
+    required Set<String> tagSet,
     void Function(List<String> tags)? onSuccess,
     void Function(Object e)? onFailure,
   }) async {
     final user = await ref.read(danbooruCurrentUserProvider(arg).future);
 
-    if (state.value == null || user == null) {
+    if (state == null || user == null) {
       onFailure?.call('Not logged in or no blacklisted tags found');
 
       return;
     }
 
     // Duplicate tags are not allowed
-    final tags = {...state.value!, tag}.toList();
+    final tags = [...state!, ...tagSet];
 
     try {
       await ref.read(danbooruClientProvider(arg)).setBlacklistedTags(
@@ -43,7 +44,7 @@ class BlacklistedTagsNotifier
 
       onSuccess?.call(tags);
 
-      state = AsyncData(tags);
+      state = tags;
     } catch (e) {
       onFailure?.call(e);
     }
@@ -57,13 +58,13 @@ class BlacklistedTagsNotifier
   }) async {
     final user = await ref.read(danbooruCurrentUserProvider(arg).future);
 
-    if (state.value == null || user == null) {
+    if (state == null || user == null) {
       onFailure?.call();
 
       return;
     }
 
-    final tags = [...state.value!]..remove(tag);
+    final tags = [...state!]..remove(tag);
 
     try {
       await ref
@@ -72,7 +73,7 @@ class BlacklistedTagsNotifier
 
       onSuccess?.call(tags);
 
-      state = AsyncData(tags);
+      state = tags;
     } catch (e) {
       onFailure?.call();
     }
@@ -87,14 +88,14 @@ class BlacklistedTagsNotifier
   }) async {
     final user = await ref.read(danbooruCurrentUserProvider(arg).future);
 
-    if (state.value == null || user == null) {
+    if (state == null || user == null) {
       onFailure?.call('Fail to replace tag');
 
       return;
     }
 
     final tags = [
-      ...[...state.value!]..remove(oldTag),
+      ...[...state!]..remove(oldTag),
       newTag,
     ];
 
@@ -105,7 +106,7 @@ class BlacklistedTagsNotifier
 
       onSuccess?.call(tags);
 
-      state = AsyncData(tags);
+      state = tags;
     } catch (e) {
       onFailure?.call('Fail to replace tag');
     }
@@ -113,11 +114,29 @@ class BlacklistedTagsNotifier
 }
 
 extension BlacklistedTagsNotifierX on BlacklistedTagsNotifier {
+  Future<void> addFromStringWithToast({
+    required String tagString,
+  }) async {
+    final tags = sanitizeBlacklistTagString(tagString);
+
+    if (tags == null) {
+      showErrorToast('Invalid tag format');
+      return;
+    }
+
+    await add(
+      tagSet: tags.toSet(),
+      onSuccess: (tags) => showSuccessToast('blacklisted_tags.updated'.tr()),
+      onFailure: (e) =>
+          showErrorToast('${'blacklisted_tags.failed_to_add'.tr()}\n$e'),
+    );
+  }
+
   Future<void> addWithToast({
     required String tag,
   }) =>
       add(
-        tag: tag,
+        tagSet: {tag},
         onSuccess: (tags) => showSuccessToast('blacklisted_tags.updated'.tr()),
         onFailure: (e) =>
             showErrorToast('${'blacklisted_tags.failed_to_add'.tr()}\n$e'),

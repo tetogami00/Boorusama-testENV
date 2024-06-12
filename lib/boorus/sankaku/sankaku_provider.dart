@@ -40,7 +40,7 @@ final sankakuPostRepoProvider =
           final artistTags = e.tags
                   ?.where((e) => intToTagCategory(e.type) == TagCategory.artist)
                   .map((e) => Tag(
-                      name: e.name ?? '????',
+                      name: e.tagName ?? '????',
                       category: TagCategory.artist,
                       postCount: e.postCount ?? 0))
                   .toList() ??
@@ -50,7 +50,7 @@ final sankakuPostRepoProvider =
                   ?.where(
                       (e) => intToTagCategory(e.type) == TagCategory.character)
                   .map((e) => Tag(
-                      name: e.name ?? '????',
+                      name: e.tagName ?? '????',
                       category: TagCategory.character,
                       postCount: e.postCount ?? 0))
                   .toList() ??
@@ -60,7 +60,7 @@ final sankakuPostRepoProvider =
                   ?.where(
                       (e) => intToTagCategory(e.type) == TagCategory.copyright)
                   .map((e) => Tag(
-                      name: e.name ?? '????',
+                      name: e.tagName ?? '????',
                       category: TagCategory.copyright,
                       postCount: e.postCount ?? 0))
                   .toList() ??
@@ -72,7 +72,7 @@ final sankakuPostRepoProvider =
             thumbnailImageUrl: e.previewUrl ?? '',
             sampleImageUrl: e.sampleUrl ?? '',
             originalImageUrl: e.fileUrl ?? '',
-            tags: e.tags?.map((e) => e.name).whereNotNull().toSet() ?? {},
+            tags: e.tags?.map((e) => e.tagName).whereNotNull().toSet() ?? {},
             rating: mapStringToRating(e.rating),
             hasComment: e.hasComments ?? false,
             isTranslated: false,
@@ -95,6 +95,10 @@ final sankakuPostRepoProvider =
                 ? DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)
                 : null,
             uploaderId: e.author?.id,
+            metadata: PostMetadata(
+              page: page,
+              search: tags.join(' '),
+            ),
           );
         }).toList();
       },
@@ -112,8 +116,8 @@ final sankakuAutocompleteRepoProvider =
     autocomplete: (query) =>
         client.getAutocomplete(query: query).then((value) => value
             .map((e) => AutocompleteData(
-                  label: e.name?.replaceAll('_', ' ') ?? '???',
-                  value: e.name ?? '???',
+                  label: e.name?.toLowerCase().replaceAll('_', ' ') ?? '???',
+                  value: e.tagName ?? '???',
                   postCount: e.count,
                   category: e.type?.toString(),
                 ))
@@ -124,7 +128,8 @@ final sankakuAutocompleteRepoProvider =
 final sankakuArtistPostRepo =
     Provider.family<PostRepository<SankakuPost>, BooruConfig>((ref, config) {
   return PostRepositoryCacher(
-    keyBuilder: (tags, page, {limit}) => '${tags.join('-')}_${page}_$limit',
+    keyBuilder: (tags, page, {limit}) =>
+        '${tags.split(' ').join('-')}_${page}_$limit',
     repository: ref.watch(sankakuPostRepoProvider(config)),
     cache: LruCacher(capacity: 100),
   );

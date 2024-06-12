@@ -9,19 +9,20 @@ import 'package:boorusama/boorus/booru_builder.dart';
 import 'package:boorusama/boorus/danbooru/danbooru.dart';
 import 'package:boorusama/boorus/gelbooru_v2/artists/artists.dart';
 import 'package:boorusama/boorus/gelbooru_v2/comments/comments.dart';
+import 'package:boorusama/boorus/gelbooru_v2/home/gelbooru_v2_mobile_home_page.dart';
 import 'package:boorusama/boorus/gelbooru_v2/posts/posts_v2.dart';
 import 'package:boorusama/boorus/providers.dart';
 import 'package:boorusama/clients/gelbooru/gelbooru_v2_client.dart';
 import 'package:boorusama/clients/gelbooru/types/note_dto.dart';
+import 'package:boorusama/core/downloads/downloads.dart';
 import 'package:boorusama/core/feats/autocompletes/autocompletes.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
-import 'package:boorusama/core/feats/downloads/downloads.dart';
 import 'package:boorusama/core/feats/notes/notes.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/core/feats/tags/tags.dart';
 import 'package:boorusama/core/scaffolds/scaffolds.dart';
+import 'package:boorusama/core/widgets/posts/post_details_page_mixin.dart';
 import 'package:boorusama/foundation/networking/networking.dart';
-import 'package:boorusama/foundation/path.dart';
 import 'package:boorusama/functional.dart';
 import 'create_gelbooru_v2_config_page.dart';
 import 'home/gelbooru_v2_home_page.dart';
@@ -192,17 +193,22 @@ class GelbooruV2Builder
 
   @override
   PostDetailsPageBuilder get postDetailsPageBuilder =>
-      (context, booruConfig, payload) => payload.isDesktop
-          ? GelbooruV2PostDetailsDesktopPage(
-              posts: payload.posts,
-              initialIndex: payload.initialIndex,
-              onExit: (page) => payload.scrollController?.scrollToIndex(page),
-            )
-          : GelbooruV2PostDetailsPage(
+      (context, config, payload) => PostDetailsLayoutSwitcher(
+            initialIndex: payload.initialIndex,
+            scrollController: payload.scrollController,
+            desktop: (controller) => GelbooruV2PostDetailsDesktopPage(
+              initialIndex: controller.currentPage.value,
               posts: payload.posts.map((e) => e as GelbooruV2Post).toList(),
-              initialIndex: payload.initialIndex,
-              onExit: (page) => payload.scrollController?.scrollToIndex(page),
-            );
+              onExit: (page) => controller.onExit(page),
+              onPageChanged: (page) => controller.setPage(page),
+            ),
+            mobile: (controller) => GelbooruV2PostDetailsPage(
+              initialIndex: controller.currentPage.value,
+              posts: payload.posts.map((e) => e as GelbooruV2Post).toList(),
+              onExit: (page) => controller.onExit(page),
+              onPageChanged: (page) => controller.setPage(page),
+            ),
+          );
 
   @override
   FavoritesPageBuilder? get favoritesPageBuilder =>
@@ -265,27 +271,25 @@ class GelbooruV2Builder
       };
 
   @override
-  DownloadFilenameGenerator get downloadFilenameBuilder =>
+  final DownloadFilenameGenerator downloadFilenameBuilder =
       DownloadFileNameBuilder(
-        defaultFileNameFormat: kGelbooruV2CustomDownloadFileNameFormat,
-        defaultBulkDownloadFileNameFormat:
-            kGelbooruV2CustomDownloadFileNameFormat,
-        sampleData: kDanbooruPostSamples,
-        tokenHandlers: {
-          'id': (post, config) => post.id.toString(),
-          'tags': (post, config) => post.tags.join(' '),
-          'extension': (post, config) =>
-              extension(config.downloadUrl).substring(1),
-          'width': (post, config) => post.width.toString(),
-          'height': (post, config) => post.height.toString(),
-          'mpixels': (post, config) => post.mpixels.toString(),
-          'aspect_ratio': (post, config) => post.aspectRatio.toString(),
-          'md5': (post, config) => post.md5,
-          'source': (post, config) => config.downloadUrl,
-          'rating': (post, config) => post.rating.name,
-          'index': (post, config) => config.index?.toString(),
-        },
-      );
+    defaultFileNameFormat: kGelbooruV2CustomDownloadFileNameFormat,
+    defaultBulkDownloadFileNameFormat: kGelbooruV2CustomDownloadFileNameFormat,
+    sampleData: kDanbooruPostSamples,
+    tokenHandlers: {
+      'width': (post, config) => post.width.toString(),
+      'height': (post, config) => post.height.toString(),
+      'mpixels': (post, config) => post.mpixels.toString(),
+      'aspect_ratio': (post, config) => post.aspectRatio.toString(),
+      'source': (post, config) => config.downloadUrl,
+    },
+  );
+
+  @override
+  HomeViewBuilder get homeViewBuilder =>
+      (context, config, controller) => GelbooruV2MobileHomePage(
+            controller: controller,
+          );
 }
 
 class GelbooruV2SearchPage extends ConsumerWidget {
@@ -301,10 +305,6 @@ class GelbooruV2SearchPage extends ConsumerWidget {
     final config = ref.watchConfig;
     return SearchPageScaffold(
       initialQuery: initialQuery,
-      gridBuilder: (context, controller, slivers) => InfinitePostListScaffold(
-        controller: controller,
-        sliverHeaderBuilder: (context) => slivers,
-      ),
       fetcher: (page, tags) =>
           ref.watch(gelbooruV2PostRepoProvider(config)).getPosts(tags, page),
     );
@@ -327,7 +327,7 @@ class GelbooruV2FavoritesPage extends ConsumerWidget {
     return FavoritesPageScaffold(
       favQueryBuilder: () => query,
       fetcher: (page) =>
-          ref.read(gelbooruV2PostRepoProvider(config)).getPosts([query], page),
+          ref.read(gelbooruV2PostRepoProvider(config)).getPosts(query, page),
     );
   }
 }

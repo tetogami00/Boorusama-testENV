@@ -1,6 +1,5 @@
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_infinite_scroll/riverpod_infinite_scroll.dart';
 
 // Project imports:
 import 'package:boorusama/boorus/danbooru/danbooru_provider.dart';
@@ -48,20 +47,6 @@ final danbooruForumTopicRepoProvider =
   );
 });
 
-final danbooruForumTopicsProvider = StateNotifierProvider.autoDispose.family<
-    DanbooruForumTopicsNotifier,
-    PagedState<int, DanbooruForumTopic>,
-    BooruConfig>((ref, config) {
-  final notifier = ref.watch(danbooruCreatorsProvider(config).notifier);
-
-  return DanbooruForumTopicsNotifier(
-    repo: ref.watch(danbooruForumTopicRepoProvider(config)),
-    onLoaded: (data) {
-      notifier.load(data.map((e) => e.creatorId).toList());
-    },
-  );
-});
-
 final danbooruForumPostRepoProvider =
     Provider.family<ForumPostRepositoryBuilder<DanbooruForumPost>, BooruConfig>(
         (ref, config) {
@@ -89,16 +74,5 @@ final danbooruForumPostRepoProvider =
 
       return data;
     },
-  );
-});
-
-final danbooruForumPostsProvider = StateNotifierProvider.autoDispose.family<
-    DanbooruForumPostsNotifier,
-    PagedState<int, DanbooruForumPost>,
-    int>((ref, topicId) {
-  final config = ref.watch(currentBooruConfigProvider);
-  return DanbooruForumPostsNotifier(
-    topicId: topicId,
-    repo: ref.watch(danbooruForumPostRepoProvider(config)),
   );
 });

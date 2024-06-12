@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Project imports:
 import 'package:boorusama/boorus/booru_builder.dart';
+import 'package:boorusama/boorus/danbooru/danbooru.dart';
 import 'package:boorusama/boorus/danbooru/danbooru_provider.dart';
 import 'package:boorusama/boorus/danbooru/feats/favorites/favorites.dart';
 import 'package:boorusama/boorus/danbooru/feats/posts/posts.dart';
@@ -35,7 +36,15 @@ final danbooruPostRepoProvider =
             ),
             limit: limit,
           )
-          .then((value) => value.map(postDtoToPost).toList());
+          .then((value) => value
+              .map((e) => postDtoToPost(
+                    e,
+                    PostMetadata(
+                      page: page,
+                      search: tags.join(' '),
+                    ),
+                  ))
+              .toList());
 
       return ref.read(danbooruPostFetchTransformerProvider(config))(posts);
     },
@@ -84,7 +93,7 @@ class DanbooruPostCreateNotifier
         parentId: parentId,
       );
 
-      state = AsyncData(postDtoToPost(post));
+      state = AsyncData(postDtoToPostNoMetadata(post));
     } catch (e, st) {
       state = AsyncError(e, st);
     }
@@ -139,6 +148,6 @@ final danbooruPostCountRepoProvider =
     countTags: (tags) =>
         ref.read(danbooruClientProvider(config)).countPosts(tags: tags),
     //TODO: this is a hack to get around the fact that count endpoint includes all ratings
-    extraTags: config.hasStrictSFW ? ['rating:general'] : [],
+    extraTags: config.url == kDanbooruSafeUrl ? ['rating:general'] : [],
   );
 });

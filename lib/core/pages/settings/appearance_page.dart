@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -197,17 +198,6 @@ class _AppearancePageState extends ConsumerState<AppearancePage> {
                   settings.copyWith(booruConfigLabelVisibility: value)),
               optionBuilder: (value) => Text(value.localize()),
             ),
-            const Divider(thickness: 1),
-            SettingsHeader(label: 'settings.image_details.image_details'.tr()),
-            SettingsTile<PostDetailsOverlayInitialState>(
-              title: const Text('settings.image_details.ui_overlay.ui_overlay')
-                  .tr(),
-              selectedOption: settings.postDetailsOverlayInitialState,
-              items: PostDetailsOverlayInitialState.values,
-              onChanged: (value) => ref.updateSettings(
-                  settings.copyWith(postDetailsOverlayInitialState: value)),
-              optionBuilder: (value) => Text(value.localize().tr()),
-            ),
             const SizedBox(
               height: 10,
             ),
@@ -285,4 +275,12 @@ class _AppearancePageState extends ConsumerState<AppearancePage> {
       },
     );
   }
+}
+
+Future<void> openAppearancePage(BuildContext context) {
+  return Navigator.of(context).push(
+    CupertinoPageRoute(
+      builder: (context) => const AppearancePage(),
+    ),
+  );
 }

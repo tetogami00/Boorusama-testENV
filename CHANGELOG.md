@@ -1,3 +1,44 @@
+# 3.18.1
+- Fix an issue where downloaded images won't show up
+- Show file path when a download is completed
+
+# 3.18.0
+- Add a Download manager where you can view and manage all your downloads for each session
+- Enable download configuration for Szurubooru, Zerochan, shimmie2 and Philomena
+- Each profile now can have its own download location
+- Add a new `search` token for download filename formatter to include current search
+- Android's Edge to Edge Mode is now enabled by default
+- Improve image loading speed for some sites
+- Minor bug fixes and UI adjustments
+
+# 3.17.0
+- Add Reduce Animations option in settings
+- Add Image Viewer settings
+- Minor bug fixes, UI adjustments and translation updates
+
+# 3.16.0
+- Add slideshow
+- Allow users to remove all booru profiles
+- Add a context menu for various places that display tags
+- Various bug fixes and UI adjustments
+
+# 3.15.2
+- Add a way to bypass Cloudflare's anti-bot protection so some sites can be accessed again
+- Attempt to fix blacklisted tags not working properly on some occasions
+- Fix an issue where download notifications got stuck with random progress
+
+# 3.15.1
+- Fix a bug on landscape tablets that prevents users from searching.
+- Fix a bug that causes autocomplete to not show up on some devices.
+- Fix an issue where download notifications won't show up as completed on some devices.
+
+# 3.15.0
+- Track download progress in notification
+- Add an option to blur explicit content when viewing posts
+- Allow playback speed adjustment for videos
+- Fix an issue where viewing video in landscape mode won't show the video controls
+- Minor bug fixes and UI adjustments
+
 # 3.14.1
 - Fix an issue where bulk download won't start on some sites
 - Minor bug fixes, UI adjustments and translation updates

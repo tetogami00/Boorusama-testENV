@@ -10,12 +10,10 @@ import 'package:boorusama/boorus/booru_builder.dart';
 import 'package:boorusama/boorus/gelbooru_v2/artists/artists.dart';
 import 'package:boorusama/boorus/gelbooru_v2/gelbooru_v2.dart';
 import 'package:boorusama/boorus/gelbooru_v2/posts/posts_v2.dart';
-import 'package:boorusama/core/feats/notes/notes.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/core/feats/tags/tags.dart';
 import 'package:boorusama/core/router.dart';
 import 'package:boorusama/core/scaffolds/scaffolds.dart';
-import 'package:boorusama/core/utils.dart';
 import 'package:boorusama/core/widgets/posts/character_post_list.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
 import 'package:boorusama/functional.dart';
@@ -35,11 +33,13 @@ class GelbooruV2PostDetailsPage extends ConsumerStatefulWidget {
     required this.posts,
     required this.initialIndex,
     required this.onExit,
+    required this.onPageChanged,
   });
 
   final int initialIndex;
   final List<GelbooruV2Post> posts;
   final void Function(int page) onExit;
+  final void Function(int page) onPageChanged;
 
   @override
   ConsumerState<GelbooruV2PostDetailsPage> createState() =>
@@ -55,28 +55,23 @@ class _PostDetailPageState extends ConsumerState<GelbooruV2PostDetailsPage> {
       posts: posts,
       initialIndex: widget.initialIndex,
       onExit: widget.onExit,
-      onTagTap: (tag) => goToSearchPage(context, tag: tag),
+      onPageChangeIndexed: widget.onPageChanged,
       toolbarBuilder: (context, post) => SimplePostActionToolbar(post: post),
       swipeImageUrlBuilder: defaultPostImageUrlBuilder(ref),
-      fileDetailsBuilder: (context, post) => FileDetailsSection(
+      fileDetailsBuilder: (context, post) => DefaultFileDetailsSection(
         post: post,
-        rating: post.rating,
-        uploader: post.uploaderName != null
-            ? Text(
-                post.uploaderName!.replaceAll('_', ' '),
-                maxLines: 1,
-                style: const TextStyle(
-                  fontSize: 14,
-                ),
-              )
-            : null,
+        uploaderName: post.uploaderName,
       ),
       sliverRelatedPostsBuilder: (context, post) => post.hasParent
-          ? ref.watch(gelbooruV2ChildPostsProvider(post.parentId!)).maybeWhen(
+          ? ref.watch(gelbooruV2ChildPostsProvider(post)).maybeWhen(
                 data: (data) => RelatedPostsSection(
                   title: 'Child posts',
                   posts: data,
                   imageUrl: (post) => post.sampleImageUrl,
+                  onViewAll: () => goToSearchPage(
+                    context,
+                    tag: post.relationshipQuery,
+                  ),
                   onTap: (index) => goToPostDetailsPage(
                     context: context,
                     posts: data,
@@ -127,21 +122,6 @@ class _PostDetailPageState extends ConsumerState<GelbooruV2PostDetailsPage> {
                   )
                 : const SliverSizedBox.shrink(),
           ),
-      imageOverlayBuilder: (constraints, post) => noteOverlayBuilderDelegate(
-        constraints,
-        post,
-        ref.watch(notesControllerProvider(post)),
-      ),
-      topRightButtonsBuilder: (page, expanded, post) {
-        return [
-          NoteActionButtonWithProvider(
-            post: post,
-            expanded: expanded,
-            noteState: ref.watch(notesControllerProvider(post)),
-          ),
-          GeneralMoreActionButton(post: post),
-        ];
-      },
       tagListBuilder: (context, post) => GelbooruV2TagsTile(
         post: post,
         onTagsLoaded: (tags) => _setTags(post, tags),

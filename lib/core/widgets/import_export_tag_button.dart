@@ -7,8 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Project imports:
 import 'package:boorusama/core/utils.dart';
+import 'package:boorusama/foundation/display.dart';
 import 'package:boorusama/foundation/i18n.dart';
-import 'package:boorusama/foundation/platform.dart';
 import 'package:boorusama/widgets/widgets.dart';
 import 'import_tag_dialog.dart';
 
@@ -33,7 +33,7 @@ class ImportExportTagButton extends ConsumerWidget {
           showGeneralDialog(
             context: context,
             pageBuilder: (context, _, __) => ImportTagsDialog(
-              padding: isMobilePlatform() ? 0 : 8,
+              padding: kPreferredLayout.isMobile ? 0 : 8,
               hint: _kHint,
               onImport: (tagString, _) {
                 onImport(tagString);
@@ -54,7 +54,7 @@ class ImportExportTagButton extends ConsumerWidget {
       },
       itemBuilder: {
         'import': const Text('favorite_tags.import').tr(),
-        'export': const Text('favorite_tags.export').tr(),
+        if (tags.isNotEmpty) 'export': const Text('favorite_tags.export').tr(),
       },
     );
   }

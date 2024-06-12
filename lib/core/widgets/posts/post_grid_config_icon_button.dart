@@ -11,10 +11,11 @@ import 'package:boorusama/boorus/booru_builder.dart';
 import 'package:boorusama/core/feats/boorus/providers.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/core/feats/settings/settings.dart';
+import 'package:boorusama/core/pages/settings/settings.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
 import 'package:boorusama/flutter.dart';
+import 'package:boorusama/foundation/display.dart';
 import 'package:boorusama/foundation/i18n.dart';
-import 'package:boorusama/foundation/platform.dart';
 import 'package:boorusama/foundation/theme/theme.dart';
 import 'package:boorusama/string.dart';
 import 'package:boorusama/widgets/widgets.dart';
@@ -168,7 +169,18 @@ class PostGridActionSheet extends ConsumerWidget {
             );
           },
         ),
+        const SizedBox(height: 12),
       ],
+      FilledButton(
+        onPressed: () {
+          context.navigator.pop();
+          openAppearancePage(context);
+        },
+        child: const Text('More'),
+      ),
+      SizedBox(
+        height: MediaQuery.viewPaddingOf(context).bottom,
+      ),
     ];
 
     final desktopButtons = [
@@ -203,18 +215,19 @@ class PostGridActionSheet extends ConsumerWidget {
     ];
 
     return Material(
-      color: isDesktopPlatform()
+      color: kPreferredLayout.isDesktop
           ? context.colorScheme.surface
           : context.colorScheme.secondaryContainer,
       child: ConditionalParentWidget(
-        condition: isMobilePlatform(),
+        condition: kPreferredLayout.isMobile,
         conditionalBuilder: (child) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
           child: child,
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
-          children: isMobilePlatform() ? mobileButtons : desktopButtons,
+          children: kPreferredLayout.isMobile ? mobileButtons : desktopButtons,
         ),
       ),
     );
@@ -235,22 +248,27 @@ class MobilePostGridConfigTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(title),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: context.theme.hintColor,
-              fontSize: 14,
-            ),
-          ),
-          const Icon(Symbols.chevron_right),
-        ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 2,
       ),
-      onTap: onTap,
+      child: ListTile(
+        title: Text(title),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                color: context.theme.hintColor,
+                fontSize: 14,
+              ),
+            ),
+            const Icon(Symbols.chevron_right),
+          ],
+        ),
+        onTap: onTap,
+      ),
     );
   }
 }

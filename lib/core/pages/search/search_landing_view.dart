@@ -77,6 +77,7 @@ class _SearchLandingViewState extends ConsumerState<SearchLandingView>
       child: FadeTransition(
         opacity: animationController,
         child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           controller: widget.scrollController,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,6 +138,9 @@ class _SearchLandingViewState extends ConsumerState<SearchLandingView>
                     ),
                     orElse: () => const SizedBox.shrink(),
                   ),
+              SizedBox(
+                height: MediaQuery.viewPaddingOf(context).bottom + 12,
+              ),
             ],
           ),
         ),

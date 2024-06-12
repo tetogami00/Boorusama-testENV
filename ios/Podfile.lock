@@ -1,7 +1,9 @@
 PODS:
+  - background_downloader (0.0.1):
+    - Flutter
   - connectivity_plus (0.0.1):
     - Flutter
-    - ReachabilitySwift
+    - FlutterMacOS
   - device_info_plus (0.0.1):
     - Flutter
   - DKImagePickerController/Core (4.3.8):
@@ -60,7 +62,6 @@ PODS:
     - Flutter
   - rate_my_app (1.1.4):
     - Flutter
-  - ReachabilitySwift (5.2.2)
   - SDWebImage (5.19.1):
     - SDWebImage/Core (= 5.19.1)
   - SDWebImage/Core (5.19.1)
@@ -88,11 +89,14 @@ PODS:
     - FlutterMacOS
   - wakelock_plus (0.0.1):
     - Flutter
+  - webview_cookie_manager (0.0.1):
+    - Flutter
   - webview_flutter_wkwebview (0.0.1):
     - Flutter
 
 DEPENDENCIES:
-  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
+  - background_downloader (from `.symlinks/plugins/background_downloader/ios`)
+  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/darwin`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
@@ -112,6 +116,7 @@ DEPENDENCIES:
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
   - wakelock_plus (from `.symlinks/plugins/wakelock_plus/ios`)
+  - webview_cookie_manager (from `.symlinks/plugins/webview_cookie_manager/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/ios`)
 
 SPEC REPOS:
@@ -119,13 +124,14 @@ SPEC REPOS:
     - DKImagePickerController
     - DKPhotoGallery
     - mdk
-    - ReachabilitySwift
     - SDWebImage
     - SwiftyGif
 
 EXTERNAL SOURCES:
+  background_downloader:
+    :path: ".symlinks/plugins/background_downloader/ios"
   connectivity_plus:
-    :path: ".symlinks/plugins/connectivity_plus/ios"
+    :path: ".symlinks/plugins/connectivity_plus/darwin"
   device_info_plus:
     :path: ".symlinks/plugins/device_info_plus/ios"
   file_picker:
@@ -164,11 +170,14 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/video_player_avfoundation/darwin"
   wakelock_plus:
     :path: ".symlinks/plugins/wakelock_plus/ios"
+  webview_cookie_manager:
+    :path: ".symlinks/plugins/webview_cookie_manager/ios"
   webview_flutter_wkwebview:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/ios"
 
 SPEC CHECKSUMS:
-  connectivity_plus: bf0076dd84a130856aa636df1c71ccaff908fa1d
+  background_downloader: 9f788ffc5de45acf87d6380e91ca0841066c18cf
+  connectivity_plus: ddd7f30999e1faaef5967c23d5b6d503d10434db
   device_info_plus: 97af1d7e84681a90d0693e63169a5d50e0839a0d
   DKImagePickerController: a7836546cfdfe014171694f643a7d575bc8ace7f
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
@@ -183,7 +192,6 @@ SPEC CHECKSUMS:
   path_provider_foundation: 3784922295ac71e43754bd15e0653ccfd36a147c
   permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
   rate_my_app: e249ec0751c276811746ff89558c23dc0da39f0c
-  ReachabilitySwift: 2128f3a8c9107e1ad33574c6e58e8285d460b149
   SDWebImage: 40b0b4053e36c660a764958bff99eed16610acbb
   share_handler_ios: 088138c17ce73333b4875a35860cd52604041521
   share_handler_ios_models: fc638c9b4330dc7f082586c92aee9dfa0b87b871
@@ -194,8 +202,9 @@ SPEC CHECKSUMS:
   url_launcher_ios: 6116280ddcfe98ab8820085d8d76ae7449447586
   video_player_avfoundation: 2b4384f3b157206b5e150a0083cdc0c905d260d3
   wakelock_plus: 78ec7c5b202cab7761af8e2b2b3d0671be6c4ae1
+  webview_cookie_manager: eaf920722b493bd0f7611b5484771ca53fed03f7
   webview_flutter_wkwebview: be0f0d33777f1bfd0c9fdcb594786704dbf65f36
 
 PODFILE CHECKSUM: 254c74d5de430d8119199055928095a36967728b
 
-COCOAPODS: 1.14.2
+COCOAPODS: 1.15.2

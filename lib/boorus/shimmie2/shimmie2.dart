@@ -1,19 +1,16 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Project imports:
 import 'package:boorusama/boorus/booru_builder.dart';
+import 'package:boorusama/boorus/danbooru/danbooru.dart';
+import 'package:boorusama/boorus/gelbooru_v2/gelbooru_v2.dart';
+import 'package:boorusama/core/configs/create/create_anon_config_page.dart';
+import 'package:boorusama/core/downloads/downloads.dart';
 import 'package:boorusama/core/feats/autocompletes/autocompletes.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
-import 'package:boorusama/core/feats/downloads/downloads.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
-import 'package:boorusama/core/pages/boorus/create_anon_config_page.dart';
 import 'package:boorusama/core/router.dart';
 import 'package:boorusama/core/scaffolds/scaffolds.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
 import 'package:boorusama/dart.dart';
-import 'package:boorusama/foundation/path.dart';
-import 'package:boorusama/functional.dart';
 
 class Shimmie2Builder
     with
@@ -26,6 +23,7 @@ class Shimmie2Builder
         NoteNotSupportedMixin,
         LegacyGranularRatingOptionsBuilderMixin,
         NoGranularRatingQueryBuilderMixin,
+        DefaultHomeMixin,
         DefaultTagColorMixin,
         DefaultPostGesturesHandlerMixin,
         DefaultPostImageDetailsUrlMixin,
@@ -33,7 +31,7 @@ class Shimmie2Builder
         DefaultPostStatisticsPageBuilderMixin,
         DefaultBooruUIMixin
     implements BooruBuilder {
-  const Shimmie2Builder({
+  Shimmie2Builder({
     required this.postRepo,
     required this.autocompleteRepo,
   });
@@ -85,7 +83,6 @@ class Shimmie2Builder
               initialIndex: payload.initialIndex,
               swipeImageUrlBuilder: defaultPostImageUrlBuilder(ref),
               onExit: (page) => payload.scrollController?.scrollToIndex(page),
-              onTagTap: (tag) => goToSearchPage(context, tag: tag),
               tagListBuilder: (context, post) => BasicTagList(
                 tags: post.tags.toList(),
                 unknownCategoryColor: ref.getTagColor(
@@ -94,27 +91,26 @@ class Shimmie2Builder
                 ),
                 onTap: (tag) => goToSearchPage(context, tag: tag),
               ),
-              fileDetailsBuilder: (context, post) => FileDetailsSection(
+              fileDetailsBuilder: (context, post) => DefaultFileDetailsSection(
                 post: post,
-                rating: post.rating,
-                uploader: castOrNull<SimplePost>(post).toOption().fold(
-                    () => null,
-                    (t) => t.uploaderName != null
-                        ? Text(
-                            t.uploaderName!.replaceAll('_', ' '),
-                            maxLines: 1,
-                            style: const TextStyle(
-                              fontSize: 14,
-                            ),
-                          )
-                        : null),
+                uploaderName: castOrNull<SimplePost>(post)?.uploaderName,
               ),
             ),
           );
 
   @override
-  DownloadFilenameGenerator<Post> get downloadFilenameBuilder =>
-      LegacyFilenameBuilder(
-        generateFileName: (post, downloadUrl) => basename(downloadUrl),
-      );
+  final DownloadFilenameGenerator<Post> downloadFilenameBuilder =
+      DownloadFileNameBuilder<Post>(
+    defaultFileNameFormat: kGelbooruV2CustomDownloadFileNameFormat,
+    defaultBulkDownloadFileNameFormat: kGelbooruV2CustomDownloadFileNameFormat,
+    sampleData: kDanbooruPostSamples,
+    hasRating: false,
+    extensionHandler: (post, config) =>
+        post.format.startsWith('.') ? post.format.substring(1) : post.format,
+    tokenHandlers: {
+      'width': (post, config) => post.width.toString(),
+      'height': (post, config) => post.height.toString(),
+      'source': (post, config) => post.source.url,
+    },
+  );
 }

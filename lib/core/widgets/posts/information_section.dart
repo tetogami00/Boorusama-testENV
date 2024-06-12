@@ -10,6 +10,7 @@ import 'package:boorusama/boorus/booru_builder.dart';
 import 'package:boorusama/boorus/providers.dart';
 import 'package:boorusama/clients/danbooru/types/tag_category.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
+import 'package:boorusama/core/feats/tags/general_tag_context_menu.dart';
 import 'package:boorusama/core/router.dart';
 import 'package:boorusama/core/utils.dart';
 import 'package:boorusama/foundation/theme/theme.dart';
@@ -43,8 +44,13 @@ class InformationSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding:
-          padding ?? const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      padding: padding ??
+          const EdgeInsets.only(
+            top: 12,
+            bottom: 4,
+            left: 16,
+            right: 16,
+          ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -62,23 +68,22 @@ class InformationSection extends ConsumerWidget {
                   overflow: TextOverflow.fade,
                   style: context.textTheme.titleLarge?.copyWith(
                     fontSize: 20,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w800,
                   ),
                   maxLines: 1,
                   softWrap: false,
                 ),
                 const SizedBox(height: 5),
-                Text(
-                  copyrightTags.isEmpty
-                      ? 'Original'
-                      : generateCopyrightOnlyReadableName(copyrightTags)
-                          .replaceUnderscoreWithSpace()
-                          .titleCase,
-                  overflow: TextOverflow.fade,
-                  style: context.textTheme.bodyLarge,
-                  maxLines: 1,
-                  softWrap: false,
-                ),
+                if (copyrightTags.isNotEmpty)
+                  Text(
+                    generateCopyrightOnlyReadableName(copyrightTags)
+                        .replaceUnderscoreWithSpace()
+                        .titleCase,
+                    overflow: TextOverflow.fade,
+                    style: context.textTheme.bodyLarge,
+                    maxLines: 1,
+                    softWrap: false,
+                  ),
                 const SizedBox(height: 5),
                 Row(
                   children: [
@@ -120,7 +125,7 @@ class InformationSection extends ConsumerWidget {
 }
 
 String chooseArtistTag(Set<String> artistTags) {
-  if (artistTags.isEmpty) return 'Unknown artist';
+  if (artistTags.isEmpty) return 'Unknownz artist';
 
   final excludedTags = {
     'banned_artist',
@@ -157,11 +162,14 @@ class ArtistNameInfoChip extends ConsumerWidget {
     );
 
     return Flexible(
-      child: CompactChip(
-        textColor: colors?.foregroundColor,
-        label: artist.replaceUnderscoreWithSpace(),
-        onTap: () => onTap?.call(artist),
-        backgroundColor: colors?.backgroundColor,
+      child: GeneralTagContextMenu(
+        tag: artist,
+        child: CompactChip(
+          textColor: colors?.foregroundColor,
+          label: artist.replaceUnderscoreWithSpace(),
+          onTap: () => onTap?.call(artist),
+          backgroundColor: colors?.backgroundColor,
+        ),
       ),
     );
   }

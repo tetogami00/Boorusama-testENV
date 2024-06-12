@@ -5,22 +5,24 @@ import 'package:flutter/material.dart';
 import 'package:context_menus/context_menus.dart';
 
 // Project imports:
-import 'package:boorusama/flutter.dart';
+import 'package:boorusama/foundation/display.dart';
 import 'package:boorusama/foundation/theme/theme.dart';
 
 class CustomContextMenuOverlay extends StatelessWidget {
   const CustomContextMenuOverlay({
     super.key,
+    this.backgroundColor,
     required this.child,
   });
 
+  final Color? backgroundColor;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return ContextMenuOverlay(
       cardBuilder: (context, children) => Material(
-        color: context.colorScheme.surface,
+        color: backgroundColor ?? context.colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(4),
         elevation: 4,
         child: Container(
@@ -56,37 +58,65 @@ class _ContextMenuTileState extends State<ContextMenuTile> {
       onExit: (_) => setState(() => isMouseOver = false),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 200),
-        child: Material(
-          color: Colors.transparent,
-          child: Ink(
-            child: ListTile(
-              dense: true,
-              visualDensity: const ShrinkVisualDensity(),
-              hoverColor: widget.config.labelStyle == null
-                  ? context.colorScheme.primary
-                  : widget.config.labelStyle?.color,
-              onTap: widget.config.onPressed,
-              title: isMouseOver
-                  ? Text(
-                      widget.config.label,
-                      style: widget.config.labelStyle != null
-                          ? widget.config.labelStyle?.copyWith(
-                              color: context.colorScheme.onError,
-                            )
-                          : TextStyle(
-                              color: context.colorScheme.onPrimary,
-                            ),
-                    )
-                  : Text(
-                      widget.config.label,
-                      style: widget.config.labelStyle ??
-                          TextStyle(
-                              color: context.colorScheme.onSurface
-                                  .withOpacity(0.75)),
-                    ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-              minVerticalPadding: 0,
-            ),
+        child: _Tile(
+          hoverColor: widget.config.labelStyle == null
+              ? context.colorScheme.primary
+              : widget.config.labelStyle?.color,
+          onTap: widget.config.onPressed,
+          title: isMouseOver
+              ? Text(
+                  widget.config.label,
+                  style: widget.config.labelStyle != null
+                      ? widget.config.labelStyle?.copyWith(
+                          color: context.colorScheme.onError,
+                        )
+                      : TextStyle(
+                          color: context.colorScheme.onPrimary,
+                        ),
+                )
+              : Text(
+                  widget.config.label,
+                  style: widget.config.labelStyle ??
+                      TextStyle(
+                        color: context.colorScheme.onSurface.withOpacity(0.75),
+                      ),
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Tile extends StatelessWidget {
+  const _Tile({
+    required this.title,
+    this.onTap,
+    this.hoverColor,
+  });
+
+  final Widget title;
+  final VoidCallback? onTap;
+  final Color? hoverColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        hoverColor: hoverColor,
+        onTap: onTap,
+        customBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            vertical: kPreferredLayout.isMobile ? 8 : 4,
+            horizontal: 8,
+          ),
+          child: Row(
+            children: [
+              title,
+            ],
           ),
         ),
       ),

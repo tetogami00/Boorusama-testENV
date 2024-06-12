@@ -1,7 +1,9 @@
 // Package imports:
 import 'package:equatable/equatable.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Project imports:
+import 'package:boorusama/core/feats/settings/settings.dart';
 import 'package:boorusama/dart.dart';
 import 'package:boorusama/foundation/gestures.dart';
 import 'package:boorusama/foundation/theme/theme_mode.dart';
@@ -85,6 +87,23 @@ enum MediaBlurCondition {
   explicitOnly,
 }
 
+enum SlideshowTransitionType {
+  none,
+  natural,
+}
+
+enum DownloaderProviderType {
+  appDecide,
+  dio,
+  backgroundDownloader,
+}
+
+enum DownloadFileExistedBehavior {
+  appDecide,
+  skip,
+  overwrite,
+}
+
 class Settings extends Equatable {
   const Settings({
     required this.safeMode,
@@ -121,6 +140,11 @@ class Settings extends Equatable {
     required this.swipeAreaToOpenSidebarPercentage,
     required this.booruConfigLabelVisibility,
     required this.mediaBlurCondition,
+    required this.slideshowInterval,
+    required this.slideshowTransitionType,
+    required this.reduceAnimations,
+    required this.downloaderProviderType,
+    required this.downloadFileExistedBehavior,
   });
 
   Settings.fromJson(Map<String, dynamic> json)
@@ -196,6 +220,19 @@ class Settings extends Equatable {
         mediaBlurCondition = json['mediaBlurCondition'] != null
             ? MediaBlurCondition.values[json['mediaBlurCondition']]
             : MediaBlurCondition.none,
+        slideshowInterval = json['slideshowInterval'] ?? 6,
+        slideshowTransitionType = json['slideshowTransitionType'] != null
+            ? SlideshowTransitionType.values[json['slideshowTransitionType']]
+            : SlideshowTransitionType.natural,
+        downloaderProviderType = json['downloaderProviderType'] != null
+            ? DownloaderProviderType.values[json['downloaderProviderType']]
+            : DownloaderProviderType.appDecide,
+        downloadFileExistedBehavior =
+            json['downloadFileExistedBehavior'] != null
+                ? DownloadFileExistedBehavior
+                    .values[json['downloadFileExistedBehavior']]
+                : DownloadFileExistedBehavior.appDecide,
+        reduceAnimations = json['reduceAnimations'] ?? false,
         swipeAreaToOpenSidebarPercentage =
             json['swipeAreaToOpenSidebarPercentage'] ?? 5,
         imageGridAspectRatio = json['imageGridAspectRatio'] ?? 0.7,
@@ -237,6 +274,11 @@ class Settings extends Equatable {
     swipeAreaToOpenSidebarPercentage: 5,
     booruConfigLabelVisibility: BooruConfigLabelVisibility.always,
     mediaBlurCondition: MediaBlurCondition.none,
+    slideshowInterval: 6,
+    slideshowTransitionType: SlideshowTransitionType.natural,
+    reduceAnimations: false,
+    downloaderProviderType: DownloaderProviderType.appDecide,
+    downloadFileExistedBehavior: DownloadFileExistedBehavior.appDecide,
   );
 
   final String blacklistedTags;
@@ -299,6 +341,16 @@ class Settings extends Equatable {
 
   final MediaBlurCondition mediaBlurCondition;
 
+  final double slideshowInterval;
+
+  final SlideshowTransitionType slideshowTransitionType;
+
+  final bool reduceAnimations;
+
+  final DownloaderProviderType downloaderProviderType;
+
+  final DownloadFileExistedBehavior downloadFileExistedBehavior;
+
   Settings copyWith({
     String? blacklistedTags,
     String? language,
@@ -335,6 +387,11 @@ class Settings extends Equatable {
     int? swipeAreaToOpenSidebarPercentage,
     BooruConfigLabelVisibility? booruConfigLabelVisibility,
     MediaBlurCondition? mediaBlurCondition,
+    double? slideshowInterval,
+    SlideshowTransitionType? slideshowTransitionType,
+    bool? reduceAnimations,
+    DownloaderProviderType? downloaderProviderType,
+    DownloadFileExistedBehavior? downloadFileExistedBehavior,
   }) =>
       Settings(
         safeMode: safeMode ?? this.safeMode,
@@ -383,6 +440,14 @@ class Settings extends Equatable {
         booruConfigLabelVisibility:
             booruConfigLabelVisibility ?? this.booruConfigLabelVisibility,
         mediaBlurCondition: mediaBlurCondition ?? this.mediaBlurCondition,
+        slideshowInterval: slideshowInterval ?? this.slideshowInterval,
+        slideshowTransitionType:
+            slideshowTransitionType ?? this.slideshowTransitionType,
+        reduceAnimations: reduceAnimations ?? this.reduceAnimations,
+        downloaderProviderType:
+            downloaderProviderType ?? this.downloaderProviderType,
+        downloadFileExistedBehavior:
+            downloadFileExistedBehavior ?? this.downloadFileExistedBehavior,
       );
 
   Map<String, dynamic> toJson() => {
@@ -421,6 +486,11 @@ class Settings extends Equatable {
         'swipeAreaToOpenSidebarPercentage': swipeAreaToOpenSidebarPercentage,
         'booruConfigLabelVisibility': booruConfigLabelVisibility.index,
         'mediaBlurCondition': mediaBlurCondition.index,
+        'slideshowInterval': slideshowInterval,
+        'slideshowTransitionType': slideshowTransitionType.index,
+        'reduceAnimations': reduceAnimations,
+        'downloaderProviderType': downloaderProviderType.index,
+        'downloadFileExistedBehavior': downloadFileExistedBehavior.index,
       };
 
   @override
@@ -459,6 +529,11 @@ class Settings extends Equatable {
         swipeAreaToOpenSidebarPercentage,
         booruConfigLabelVisibility,
         mediaBlurCondition,
+        slideshowInterval,
+        slideshowTransitionType,
+        reduceAnimations,
+        downloaderProviderType,
+        downloadFileExistedBehavior,
       ];
 }
 
@@ -478,6 +553,32 @@ extension SettingsX on Settings {
 
   bool get blurExplicitMedia =>
       mediaBlurCondition == MediaBlurCondition.explicitOnly;
+
+  bool get skipSlideshowTransition =>
+      slideshowTransitionType == SlideshowTransitionType.none;
+
+  bool get useLegacyDownloader =>
+      downloaderProviderType == DownloaderProviderType.dio;
+
+  bool get skipDownloadIfExists =>
+      downloadFileExistedBehavior == DownloadFileExistedBehavior.skip;
+
+  Duration get slideshowDuration {
+    // if less than 1 second, should use milliseconds instead
+    return slideshowInterval < 1
+        ? Duration(milliseconds: (slideshowInterval * 1000).toInt())
+        : Duration(seconds: slideshowInterval.toInt());
+  }
+
+  List<int> get booruConfigIdOrderList {
+    try {
+      if (booruConfigIdOrders.isEmpty) return [];
+
+      return booruConfigIdOrders.split(' ').map(int.parse).toList();
+    } catch (e) {
+      return [];
+    }
+  }
 }
 
 extension PageIndicatorPositionX on PageIndicatorPosition {
@@ -486,4 +587,25 @@ extension PageIndicatorPositionX on PageIndicatorPosition {
       this == PageIndicatorPosition.both;
   bool get isVisibleAtTop =>
       this == PageIndicatorPosition.top || this == PageIndicatorPosition.both;
+}
+
+extension SettingsUpdateX on WidgetRef {
+  Future<void> updateDownloaderStatus(Settings settings, bool legacy) {
+    return updateSettings(settings.copyWith(
+      downloaderProviderType: legacy
+          ? DownloaderProviderType.dio
+          : DownloaderProviderType.appDecide,
+    ));
+  }
+
+  Future<void> updateDownloadFileExistedBehavior(
+    Settings settings,
+    bool skipIfExists,
+  ) {
+    return updateSettings(settings.copyWith(
+      downloadFileExistedBehavior: skipIfExists
+          ? DownloadFileExistedBehavior.skip
+          : DownloadFileExistedBehavior.appDecide,
+    ));
+  }
 }

@@ -23,6 +23,7 @@ import 'package:boorusama/core/feats/tags/tags.dart';
 import 'package:boorusama/core/router.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
 import 'package:boorusama/flutter.dart';
+import 'package:boorusama/foundation/display.dart';
 import 'package:boorusama/foundation/i18n.dart';
 import 'package:boorusama/foundation/package_info.dart';
 import 'package:boorusama/foundation/platform.dart';
@@ -242,6 +243,9 @@ class UserDetailsPage extends ConsumerWidget {
                               .value,
                           user: user,
                         ),
+                      SizedBox(
+                        height: MediaQuery.viewPaddingOf(context).bottom + 12,
+                      ),
                     ],
                   ),
                 ),
@@ -262,6 +266,7 @@ class UserDetailsPage extends ConsumerWidget {
   Widget _buildPlaceHolderTags(BuildContext context) {
     return Wrap(
       spacing: 8,
+      runSpacing: isDesktopPlatform() ? 4 : 0,
       children: [
         'aaaaaaaaaaaaa',
         'fffffffffffffffff',
@@ -291,6 +296,7 @@ class UserDetailsPage extends ConsumerWidget {
   ) {
     return Wrap(
       spacing: 8,
+      runSpacing: isDesktopPlatform() ? 4 : 0,
       children: tags
           .map(
             (e) => BooruChip(
@@ -516,7 +522,7 @@ class _PreviewList extends ConsumerWidget {
         LayoutBuilder(
           builder: (context, constraints) => PreviewPostList(
             posts: posts,
-            height: isMobilePlatform() ? null : 300,
+            height: kPreferredLayout.isMobile ? null : 300,
             width: max(constraints.maxWidth / 6, 100),
             onTap: (index) => goToPostDetailsPage(
               context: context,

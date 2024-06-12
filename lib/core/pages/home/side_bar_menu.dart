@@ -10,9 +10,9 @@ import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
 import 'package:boorusama/boorus/providers.dart';
+import 'package:boorusama/core/configs/manage/booru_selector.dart';
 import 'package:boorusama/core/feats/settings/settings.dart';
 import 'package:boorusama/core/router.dart';
-import 'package:boorusama/core/widgets/booru_selector.dart';
 import 'package:boorusama/core/widgets/current_booru_tile.dart';
 import 'package:boorusama/flutter.dart';
 import 'package:boorusama/foundation/i18n.dart';
@@ -60,12 +60,16 @@ class SideBarMenu extends ConsumerWidget {
             child: ColoredBox(
               color: context.colorScheme.surface,
               child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      height: MediaQuery.viewPaddingOf(context).top,
-                    ),
+                    if (initialContentBuilder != null)
+                      SizedBox(
+                        height: MediaQuery.viewPaddingOf(context).top,
+                      )
+                    else
+                      const SizedBox(height: 24),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8),
                       child: CurrentBooruTile(),
@@ -77,7 +81,7 @@ class SideBarMenu extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: e,
                           )),
-                    const Divider(),
+                    if (initialContentBuilder != null) const Divider(),
                     if (contentBuilder != null) ...[
                       ...contentBuilder!(context).map((e) => Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -110,7 +114,7 @@ class SideBarMenu extends ConsumerWidget {
                           },
                         ),
                         SideMenuTile(
-                          icon: const Icon(Symbols.download),
+                          icon: const Icon(Symbols.sim_card_download),
                           title: const Text('sideMenu.bulk_download').tr(),
                           onTap: () {
                             if (popOnSelect) context.navigator.pop();
@@ -119,6 +123,14 @@ class SideBarMenu extends ConsumerWidget {
                               null,
                               ref: ref,
                             );
+                          },
+                        ),
+                        SideMenuTile(
+                          icon: const Icon(Symbols.download),
+                          title: const Text('Download manager'),
+                          onTap: () {
+                            if (popOnSelect) context.navigator.pop();
+                            context.go('/download_manager');
                           },
                         ),
                         const Divider(),
@@ -148,6 +160,9 @@ class SideBarMenu extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: e,
                           )),
+                    SizedBox(
+                      height: MediaQuery.viewPaddingOf(context).bottom + 12,
+                    ),
                   ],
                 ),
               ),

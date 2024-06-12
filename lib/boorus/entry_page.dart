@@ -6,9 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Project imports:
 import 'package:boorusama/boorus/booru_builder.dart';
+import 'package:boorusama/core/configs/manage/manage.dart';
+import 'package:boorusama/core/downloads/downloads.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
-import 'package:boorusama/core/feats/downloads/downloads.dart';
 import 'package:boorusama/core/feats/posts/posts.dart';
+import 'package:boorusama/core/home/home.dart';
 import 'package:boorusama/core/router.dart';
 import 'package:boorusama/core/utils.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
@@ -67,9 +69,9 @@ class _EntryPageState extends ConsumerState<EntryPage> {
           .select((value) => value.downloadStatuses),
       (previous, next) {
         if (previous == null) return;
-        if (previous.values.any((e) => e is! BulkDownloadDone) &&
+        if (previous.values.any((e) => e is! DownloadDone) &&
             next.values.isNotEmpty &&
-            next.values.all((t) => t is BulkDownloadDone)) {
+            next.values.all((t) => t is DownloadDone)) {
           showSimpleSnackBar(
             context: context,
             duration: const Duration(seconds: 3),
@@ -87,7 +89,8 @@ class _EntryPageState extends ConsumerState<EntryPage> {
 
     return OrientationBuilder(
       builder: (context, orientation) => ConditionalParentWidget(
-        condition: isDesktopPlatform() || orientation.isLandscape,
+        condition: kPreferredLayout.isDesktop ||
+            (kPreferredLayout.isMobile && orientation.isLandscape),
         conditionalBuilder: (child) => Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -134,68 +137,59 @@ class _Boorus extends ConsumerWidget {
       );
     } else {
       final availableConfigs = ref.watch(booruConfigProvider);
-      return Scaffold(
-        appBar: AppBar(),
-        body: Center(
-          child: Column(
-            children: [
-              Text(
-                'Current selected profile is invalid',
-                style: context.textTheme.titleLarge,
-              ),
-              if (availableConfigs?.isNotEmpty == true)
-                Text(
-                  'Select a profile from the list below to continue',
-                  style: context.textTheme.titleMedium?.copyWith(
-                    color: context.theme.hintColor,
-                  ),
-                ),
-              const SizedBox(height: 16),
-              if (availableConfigs != null)
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: availableConfigs.length,
-                    itemBuilder: (context, index) {
-                      final config = availableConfigs[index];
-                      return ListTile(
-                        title: Text(config.name),
-                        subtitle: Text(config.url),
-                        onTap: () {
-                          ref.read(currentBooruConfigProvider.notifier).update(
-                                config,
-                              );
-                        },
-                        leading: PostSource.from(config.url).whenWeb(
-                          (source) => ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: BooruLogo(source: source),
-                          ),
-                          () => const SizedBox.shrink(),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-            ],
-          ),
-        ),
-      );
+      return availableConfigs != null && availableConfigs.isNotEmpty
+          ? _buildInvalid(availableConfigs, ref)
+          : const EmptyBooruConfigHomePage();
     }
   }
-}
 
-class HomePageController extends ValueNotifier<int> {
-  HomePageController({
-    required this.scaffoldKey,
-  }) : super(0);
+  Widget _buildInvalid(List<BooruConfig> availableConfigs, WidgetRef ref) {
+    final context = ref.context;
 
-  final GlobalKey<ScaffoldState> scaffoldKey;
-
-  void goToTab(int index) {
-    value = index;
-  }
-
-  void openMenu() {
-    scaffoldKey.currentState?.openDrawer();
+    return Scaffold(
+      appBar: AppBar(),
+      body: Center(
+        child: Column(
+          children: [
+            Text(
+              'Current selected profile is invalid',
+              style: context.textTheme.titleLarge,
+            ),
+            if (availableConfigs.isNotEmpty == true)
+              Text(
+                'Select a profile from the list below to continue',
+                style: context.textTheme.titleMedium?.copyWith(
+                  color: context.theme.hintColor,
+                ),
+              ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: availableConfigs.length,
+                itemBuilder: (context, index) {
+                  final config = availableConfigs[index];
+                  return ListTile(
+                    title: Text(config.name),
+                    subtitle: Text(config.url),
+                    onTap: () {
+                      ref.read(currentBooruConfigProvider.notifier).update(
+                            config,
+                          );
+                    },
+                    leading: PostSource.from(config.url).whenWeb(
+                      (source) => ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: BooruLogo(source: source),
+                      ),
+                      () => const SizedBox.shrink(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

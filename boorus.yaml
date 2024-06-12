@@ -34,6 +34,7 @@
         protocol: https_2
 
 - gelbooru:
+    protocol: https_2
     sites:
       - https://gelbooru.com/
 
@@ -71,6 +72,7 @@
     sites:
       - https://chan.sankakucomplex.com/
       - https://beta.sankakucomplex.com/
+      - https://sankaku.app/
 
 - philomena:
     protocol: https_2

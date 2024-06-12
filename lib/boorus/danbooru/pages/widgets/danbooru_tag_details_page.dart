@@ -16,9 +16,9 @@ import 'package:boorusama/core/feats/tags/tags.dart';
 import 'package:boorusama/core/router.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
 import 'package:boorusama/foundation/display.dart';
-import 'package:boorusama/foundation/platform.dart';
 import 'package:boorusama/foundation/theme/theme.dart';
 import 'package:boorusama/widgets/widgets.dart';
+import 'danbooru_tag_context_menu.dart';
 import 'related_tag_cloud_chip.dart';
 
 const _kTagCloudTotal = 30;
@@ -76,61 +76,62 @@ class _DanbooruTagDetailsPageState
           page,
         ),
         builder: (context, controller, errors) {
+          final widgets = [
+            () => TagTitleName(tagName: widget.tagName),
+            () => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: widget.otherNamesBuilder(context),
+                    ),
+                  ],
+                ),
+            if (widget.extraBuilder != null)
+              for (final extra in widget.extraBuilder!.call(context))
+                () => extra,
+            () => const SizedBox(height: 20),
+            () => _buildTagCloud(),
+            () => const SizedBox(height: 20),
+            () => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: CategoryToggleSwitch(
+                    onToggle: (category) {
+                      selectedCategory.value = category;
+                      controller.refresh();
+                    },
+                  ),
+                ),
+          ];
+
+          final headers = [
+            if (kPreferredLayout.isMobile &&
+                context.orientation.isPortrait) ...[
+              TagDetailsSlilverAppBar(
+                tagName: widget.tagName,
+              ),
+              SliverList.builder(
+                itemCount: widgets.length,
+                itemBuilder: (context, index) => widgets[index].call(),
+              ),
+            ] else
+              SliverPadding(
+                padding: const EdgeInsets.only(bottom: 10),
+                sliver: SliverToBoxAdapter(
+                  child: CategoryToggleSwitch(
+                    onToggle: (category) {
+                      selectedCategory.value = category;
+                      controller.refresh();
+                    },
+                  ),
+                ),
+              ),
+          ];
+
           return DanbooruInfinitePostList(
             errors: errors,
             controller: controller,
-            sliverHeaderBuilder: (context) {
-              final widgets = [
-                () => TagTitleName(tagName: widget.tagName),
-                () => Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: widget.otherNamesBuilder(context),
-                        ),
-                      ],
-                    ),
-                if (widget.extraBuilder != null)
-                  for (final extra in widget.extraBuilder!.call(context))
-                    () => extra,
-                () => const SizedBox(height: 20),
-                () => _buildTagCloud(),
-                () => const SizedBox(height: 20),
-                () => Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: CategoryToggleSwitch(
-                        onToggle: (category) {
-                          selectedCategory.value = category;
-                          controller.refresh();
-                        },
-                      ),
-                    ),
-              ];
-
-              return [
-                if (isMobilePlatform() && context.orientation.isPortrait) ...[
-                  TagDetailsSlilverAppBar(
-                    tagName: widget.tagName,
-                  ),
-                  SliverList.builder(
-                    itemCount: widgets.length,
-                    itemBuilder: (context, index) => widgets[index].call(),
-                  ),
-                ] else
-                  SliverPadding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    sliver: SliverToBoxAdapter(
-                      child: CategoryToggleSwitch(
-                        onToggle: (category) {
-                          selectedCategory.value = category;
-                          controller.refresh();
-                        },
-                      ),
-                    ),
-                  ),
-              ];
-            },
+            sliverHeaders: headers,
           );
         },
       ),
@@ -229,13 +230,16 @@ class ArtistTagCloud extends ConsumerWidget {
             return ref.watch(_tagCategoryColorsProvider(params)).when(
                   data: (tagColors) => TagCloud(
                     itemCount: tags.length,
-                    itemBuilder: (context, i) => RelatedTagCloudChip(
-                      index: i,
-                      tag: tags[i],
-                      color: tagColors[tags[i].category.name],
-                      onPressed: () => goToSearchPage(
-                        context,
-                        tag: tags[i].tag,
+                    itemBuilder: (context, i) => DanbooruTagContextMenu(
+                      tag: tags[i].tag,
+                      child: RelatedTagCloudChip(
+                        index: i,
+                        tag: tags[i],
+                        color: tagColors[tags[i].category.name],
+                        onPressed: () => goToSearchPage(
+                          context,
+                          tag: tags[i].tag,
+                        ),
                       ),
                     ),
                   ),

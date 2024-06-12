@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Project imports:
 import 'package:boorusama/boorus/booru_builder.dart';
 import 'package:boorusama/boorus/providers.dart';
+import 'package:boorusama/core/configs/manage/manage.dart';
 import 'package:boorusama/core/feats/autocompletes/autocompletes.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
 import 'package:boorusama/core/feats/search/search.dart';
@@ -57,8 +58,6 @@ class SuggestionsNotifier
     final sanitized = sanitizeQuery(query);
 
     if (sanitized.length == 1 && op != FilterOperator.none) return;
-
-    if (state.containsKey(sanitized)) return;
 
     final fallback = ref.read(fallbackSuggestionsProvider.notifier);
     final booruBuilder = ref.read(booruBuilderProvider);

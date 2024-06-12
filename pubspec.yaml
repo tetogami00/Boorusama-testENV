@@ -2,7 +2,7 @@ name: boorusama
 description: A mobile client for Booru sites.
 
 publish_to: "none"
-version: 3.14.1+95
+version: 3.18.1+104
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -11,17 +11,18 @@ dependencies:
   android_intent_plus: ^5.0.1
   animated_list_plus: ^0.5.2
   auto_size_text: ^3.0.0
+  background_downloader: ^8.5.2
   bitsdojo_window: ^0.1.6
   cached_network_image: ^3.3.0
-  carousel_slider: ^4.2.1
   chewie: ^1.7.1
   clock: ^1.1.1
   collection: ^1.17.0
-  connectivity_plus: ^5.0.1
+  connectivity_plus: ^6.0.3
   context_menus:
     git:
       url: https://github.com/khoadng/flutter-context-menu.git
       ref: 314d1871b50d5376fa6fa30b81d7279a3734d018
+  cookie_jar: ^4.0.8
   crypto: ^3.0.3
   custom_sliding_segmented_control: ^1.8.1
   device_info_plus: ^10.0.1
@@ -31,6 +32,7 @@ dependencies:
   dio_http2_adapter: ^2.5.2
   dynamic_color: ^1.7.0
   easy_localization: ^3.0.6
+  easy_logger: ^0.0.2
   equatable: ^2.0.5
   expandable: ^5.0.1
   exprollable_page_view: ^1.0.1
@@ -41,7 +43,6 @@ dependencies:
   fl_chart: ^0.67.0
   flutter:
     sdk: flutter
-  flutter_advanced_segment: ^3.0.2
   flutter_cache_manager: ^3.3.1
   flutter_download_manager:
     git:
@@ -79,13 +80,8 @@ dependencies:
   media_scanner: ^2.1.0
   modal_bottom_sheet: ^3.0.0-pre
   multi_split_view: ^2.4.0
-  number_inc_dec:
-    git:
-      url: https://github.com/hilalbaig/number_inc_dec.git
-      ref: f66ee872727172ce2fe57f118d569339d54c384d
   oktoast: ^3.4.0
   package_info_plus: ^7.0.0
-  page_transition: ^2.1.0
   path: ^1.8.3
   path_provider: ^2.1.2
   percent_indicator: ^4.2.3
@@ -93,17 +89,14 @@ dependencies:
   petitparser: ^6.0.2
   photo_view: ^0.15.0
   rate_my_app: 1.1.4 # DO NOT UPDATE, 2.0.0 is adding unnecessary permissions
+  readmore: ^3.0.0
   recase: ^4.1.0
   reorderable_grid_view: ^2.2.8
   reorderables:
     git:
       url: https://github.com/khoadng/reorderables.git
       ref: 69d1b8b272f3b77dc6a6b7399fa8931cdd660d77
-  rich_text_controller:
-    git:
-      url: https://github.com/khoadng/rich_text_controller.git
-      ref: flutter-3.0
-  riverpod_infinite_scroll: ^1.0.9
+  rich_text_controller: ^1.4.2
   rxdart: ^0.27.7
   scroll_to_index: ^3.0.1
   searchfield: ^1.0.1
@@ -118,6 +111,7 @@ dependencies:
   video_player: ^2.8.6
   video_player_macos: ^2.0.1
   visibility_detector: ^0.4.0+2
+  webview_cookie_manager: ^2.0.6
   webview_flutter: ^4.7.0
   webview_flutter_android: ^3.15.0
   xml: ^6.5.0

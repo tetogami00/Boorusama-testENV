@@ -30,7 +30,15 @@ final gelbooruV2PostRepoProvider =
             page: page,
             limit: limit,
           )
-          .then((value) => value.map(gelbooruV2PostDtoToGelbooruPost).toList()),
+          .then((value) => value
+              .map((e) => gelbooruV2PostDtoToGelbooruPost(
+                    e,
+                    PostMetadata(
+                      page: page,
+                      search: tags.join(' '),
+                    ),
+                  ))
+              .toList()),
       getSettings: () async => ref.read(settingsProvider),
     );
   },
@@ -47,11 +55,11 @@ final gelbooruV2ArtistCharacterPostRepoProvider =
 );
 
 final gelbooruV2ChildPostsProvider = FutureProvider.autoDispose
-    .family<List<GelbooruV2Post>, int>((ref, parentId) async {
+    .family<List<GelbooruV2Post>, GelbooruV2Post>((ref, post) async {
   return ref
       .watch(gelbooruV2PostRepoProvider(ref.watchConfig))
       .getPostsFromTagWithBlacklist(
-        tag: 'parent:$parentId',
+        tag: post.relationshipQuery,
         blacklist: ref.watch(blacklistTagsProvider(ref.watchConfig)),
       );
 });

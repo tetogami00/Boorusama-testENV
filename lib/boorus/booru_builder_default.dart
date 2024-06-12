@@ -111,9 +111,9 @@ mixin DefaultGranularRatingFiltererMixin on BooruBuilder {
 mixin DefaultPostGesturesHandlerMixin on BooruBuilder {
   @override
   PostGestureHandlerBuilder get postGestureHandlerBuilder =>
-      (ref, action, post, downloader) => handleDefaultGestureAction(
+      (ref, action, post) => handleDefaultGestureAction(
             action,
-            onDownload: () => downloader(post),
+            onDownload: () => ref.download(post),
             onShare: () => ref.sharePost(
               post,
               context: ref.context,
@@ -252,8 +252,16 @@ mixin DefaultBooruUIMixin implements BooruBuilder {
               initialIndex: payload.initialIndex,
               swipeImageUrlBuilder: defaultPostImageUrlBuilder(ref),
               onExit: (page) => payload.scrollController?.scrollToIndex(page),
-              onTagTap: (tag) => goToSearchPage(context, tag: tag),
             ),
+          );
+}
+
+mixin DefaultHomeMixin implements BooruBuilder {
+  @override
+  HomeViewBuilder get homeViewBuilder =>
+      (context, config, controller) => MobileHomePageScaffold(
+            controller: controller,
+            onSearchTap: () => goToSearchPage(context),
           );
 }
 
@@ -262,10 +270,11 @@ String Function(
 ) defaultPostImageUrlBuilder(
   WidgetRef ref,
 ) =>
-    (post) =>
-        ref.watchBooruBuilder(ref.watchConfig)?.postImageDetailsUrlBuilder(
-            ref.watch(settingsProvider), post, ref.watchConfig) ??
-        post.sampleImageUrl;
+    (post) => kPreferredLayout.isDesktop
+        ? post.sampleImageUrl
+        : ref.watchBooruBuilder(ref.watchConfig)?.postImageDetailsUrlBuilder(
+                ref.watch(settingsProvider), post, ref.watchConfig) ??
+            post.sampleImageUrl;
 
 Widget Function(
   BuildContext context,

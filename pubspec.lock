@@ -65,6 +65,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  background_downloader:
+    dependency: "direct main"
+    description:
+      name: background_downloader
+      sha256: "9504093db43da6095c44dd14fc816f3ee8961633ace12340f5d3c4fbfd346e2d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "8.5.2"
   bitsdojo_window:
     dependency: "direct main"
     description:
@@ -201,14 +209,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
-  carousel_slider:
-    dependency: "direct main"
-    description:
-      name: carousel_slider
-      sha256: "9c695cc963bf1d04a47bd6021f68befce8970bcd61d24938e1fb0918cf5d9c42"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.2.1"
   characters:
     dependency: transitive
     description:
@@ -269,18 +269,18 @@ packages:
     dependency: "direct main"
     description:
       name: connectivity_plus
-      sha256: "224a77051d52a11fbad53dd57827594d3bd24f945af28bd70bab376d68d437f0"
+      sha256: db7a4e143dc72cc3cb2044ef9b052a7ebfe729513e6a82943bc3526f784365b8
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.2"
+    version: "6.0.3"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
       name: connectivity_plus_platform_interface
-      sha256: cf1d1c28f4416f8c654d7dc3cd638ec586076255d407cef3ddbdaf178272a71a
+      sha256: b6a56efe1e6675be240de39107281d4034b64ac23438026355b4234042a35adb
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.4"
+    version: "2.0.0"
   context_menus:
     dependency: "direct main"
     description:
@@ -298,6 +298,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.1"
+  cookie_jar:
+    dependency: "direct main"
+    description:
+      name: cookie_jar
+      sha256: a6ac027d3ed6ed756bfce8f3ff60cb479e266f3b0fdabd6242b804b6765e52de
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.8"
   coverage:
     dependency: transitive
     description:
@@ -427,7 +435,7 @@ packages:
     source: hosted
     version: "3.0.6"
   easy_logger:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: easy_logger
       sha256: c764a6e024846f33405a2342caf91c62e357c24b02c04dbc712ef232bf30ffb7
@@ -543,14 +551,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_advanced_segment:
-    dependency: "direct main"
-    description:
-      name: flutter_advanced_segment
-      sha256: "58518e2b7229cc4dd98a778f594e54813a4c244bcbf9e702a8fa194bf09509b8"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.2"
   flutter_cache_manager:
     dependency: "direct main"
     description:
@@ -1113,15 +1113,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.2"
-  number_inc_dec:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: f66ee872727172ce2fe57f118d569339d54c384d
-      resolved-ref: f66ee872727172ce2fe57f118d569339d54c384d
-      url: "https://github.com/hilalbaig/number_inc_dec.git"
-    source: git
-    version: "0.8.0"
   numerus:
     dependency: transitive
     description:
@@ -1170,14 +1161,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
-  page_transition:
-    dependency: "direct main"
-    description:
-      name: page_transition
-      sha256: dee976b1f23de9bbef5cd512fe567e9f6278caee11f5eaca9a2115c19dc49ef6
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   path:
     dependency: "direct main"
     description:
@@ -1378,6 +1361,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.4"
+  readmore:
+    dependency: "direct main"
+    description:
+      name: readmore
+      sha256: e8fca2bd397b86342483b409e2ec26f06560a5963aceaa39b27f30722b506187
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   recase:
     dependency: "direct main"
     description:
@@ -1406,12 +1397,11 @@ packages:
   rich_text_controller:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "flutter-3.0"
-      resolved-ref: "1c956b6e43ff78c8c3e8a908cae997f8127574a7"
-      url: "https://github.com/khoadng/rich_text_controller.git"
-    source: git
-    version: "1.4.0"
+      name: rich_text_controller
+      sha256: "2697b0313c03429ac4d924e14f16e07d16e31a234d31c46bcce9f8f8e713f05f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.2"
   riverpod:
     dependency: transitive
     description:
@@ -1420,14 +1410,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.5.1"
-  riverpod_infinite_scroll:
-    dependency: "direct main"
-    description:
-      name: riverpod_infinite_scroll
-      sha256: "94f177086c77dc17ca8d1e85117eed346ff6ac651ccbf4d51a449b212d68fd24"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.9"
   rxdart:
     dependency: "direct main"
     description:
@@ -1785,6 +1767,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.2"
+  universal_io:
+    dependency: transitive
+    description:
+      name: universal_io
+      sha256: "1722b2dcc462b4b2f3ee7d188dad008b6eb4c40bbd03a3de451d82c78bba9aad"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.2"
   url_launcher:
     dependency: "direct main"
     description:
@@ -2009,6 +1999,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.1"
+  webview_cookie_manager:
+    dependency: "direct main"
+    description:
+      name: webview_cookie_manager
+      sha256: "425a9feac5cd2cb62a71da3dda5ac2eaf9ece5481ee8d79f3868dc5ba8223ad3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.6"
   webview_flutter:
     dependency: "direct main"
     description:

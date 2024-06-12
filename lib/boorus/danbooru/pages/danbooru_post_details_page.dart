@@ -18,11 +18,11 @@ import 'package:boorusama/boorus/providers.dart';
 import 'package:boorusama/core/feats/artist_commentaries/artist_commentaries.dart';
 import 'package:boorusama/core/feats/boorus/boorus.dart';
 import 'package:boorusama/core/feats/notes/notes.dart';
+import 'package:boorusama/core/feats/posts/posts.dart';
 import 'package:boorusama/core/feats/tags/booru_tag_type_store.dart';
 import 'package:boorusama/core/feats/tags/tags.dart';
 import 'package:boorusama/core/router.dart';
 import 'package:boorusama/core/scaffolds/post_details_page_scaffold.dart';
-import 'package:boorusama/core/utils.dart';
 import 'package:boorusama/core/widgets/posts/character_post_list.dart';
 import 'package:boorusama/core/widgets/widgets.dart';
 import 'package:boorusama/widgets/widgets.dart';
@@ -37,11 +37,13 @@ class DanbooruPostDetailsPage extends ConsumerStatefulWidget {
     required this.posts,
     required this.intitialIndex,
     required this.onExit,
+    required this.onPageChanged,
   });
 
   final int intitialIndex;
   final List<DanbooruPost> posts;
   final void Function(int page) onExit;
+  final void Function(int page) onPageChanged;
 
   @override
   ConsumerState<DanbooruPostDetailsPage> createState() =>
@@ -60,8 +62,8 @@ class _DanbooruPostDetailsPageState
         posts: posts,
         initialIndex: widget.intitialIndex,
         onExit: widget.onExit,
-        sourceSectionBuilder: (context, post) => const SizedBox.shrink(),
-        onTagTap: (tag) => goToSearchPage(context, tag: tag),
+        parts: kDefaultPostDetailsNoSourceParts,
+        onPageChangeIndexed: widget.onPageChanged,
         toolbarBuilder: (context, post) =>
             DanbooruPostActionToolbar(post: post),
         swipeImageUrlBuilder: defaultPostImageUrlBuilder(ref),
@@ -98,7 +100,13 @@ class _DanbooruPostDetailsPageState
                   orElse: () => const SliverSizedBox.shrink(),
                 ),
         sliverRelatedPostsBuilder: (context, post) =>
-            DanbooruRelatedPostsSection(post: post),
+            ref.watch(danbooruPostDetailsChildrenProvider(post)).maybeWhen(
+                  data: (posts) => DanbooruRelatedPostsSection(
+                    posts: posts,
+                    currentPost: post,
+                  ),
+                  orElse: () => const SliverSizedBox.shrink(),
+                ),
         poolTileBuilder: (context, post) =>
             ref.watch(danbooruPostDetailsPoolsProvider(post.id)).maybeWhen(
                   data: (pools) => PoolTiles(pools: pools),
@@ -123,20 +131,18 @@ class _DanbooruPostDetailsPageState
             currentPage == widget.intitialIndex && post.isTranslated
                 ? null
                 : post.thumbnailImageUrl,
-        imageOverlayBuilder: (constraints, post) => noteOverlayBuilderDelegate(
-          constraints,
-          post,
-          ref.watch(notesControllerProvider(post)),
-        ),
         fileDetailsBuilder: (context, post) => DanbooruFileDetails(post: post),
-        topRightButtonsBuilder: (page, expanded, post) {
+        topRightButtonsBuilder: (page, expanded, post, controller) {
           return [
             NoteActionButtonWithProvider(
               post: post,
               expanded: expanded,
               noteState: ref.watch(notesControllerProvider(post)),
             ),
-            DanbooruMoreActionButton(post: post),
+            DanbooruMoreActionButton(
+              post: post,
+              onStartSlideshow: () => controller.startSlideshow(),
+            ),
           ];
         },
       ),
@@ -289,24 +295,27 @@ final danbooruCharacterExpandStateProvider =
 class DanbooruRelatedPostsSection extends ConsumerWidget {
   const DanbooruRelatedPostsSection({
     super.key,
-    required this.post,
+    required this.currentPost,
+    required this.posts,
   });
 
-  final DanbooruPost post;
+  final DanbooruPost currentPost;
+  final List<DanbooruPost> posts;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ref.watch(danbooruPostDetailsChildrenProvider(post)).maybeWhen(
-          data: (posts) => RelatedPostsSection(
-            posts: posts,
-            imageUrl: (item) => item.url720x720,
-            onTap: (index) => goToPostDetailsPage(
-              context: context,
-              posts: posts,
-              initialIndex: index,
-            ),
-          ),
-          orElse: () => const SliverSizedBox.shrink(),
-        );
+    return RelatedPostsSection(
+      posts: posts,
+      imageUrl: (item) => item.url720x720,
+      onViewAll: () => goToSearchPage(
+        context,
+        tag: currentPost.relationshipQuery,
+      ),
+      onTap: (index) => goToPostDetailsPage(
+        context: context,
+        posts: posts,
+        initialIndex: index,
+      ),
+    );
   }
 }
