@@ -1,3 +1,12 @@
+# Prereleased-2025.3.20
+- Add profile-specific blacklist
+- Support adding custom blacklist tags for each individual bulk download task and template
+- Support adding raw query directly to favorited tags
+- Add support for Idol Sankaku
+- Add Android's monochrome icon variant
+- Add a new grid's popup menu for easier access to various actions
+- Bookmark listing screen is now using the same layout as other screens
+
 # 4.0.0
 - Introduce Boorusama Plus that unlocks additional features like theme, home screen, layout customization, and more.
 - Major image viewer and video player overhaul.
