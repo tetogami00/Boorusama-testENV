@@ -20,8 +20,8 @@ import '../../../core/foundation/url_launcher.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../gelbooru.dart';
-import 'api_key_verify_dialog.dart';
 import '_internal_widgets.dart';
+import 'api_key_verify_dialog.dart';
 
 class CreateGelbooruConfigPage extends ConsumerWidget {
   const CreateGelbooruConfigPage({
