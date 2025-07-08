@@ -35,11 +35,11 @@ class FavoriteTagsNotifier extends Notifier<List<FavoriteTag>> {
     return [];
   }
 
-  Future<FavoriteTagRepository> get repo =>
+  Future<FavoriteTagRepository> get _repo =>
       ref.read(favoriteTagRepoProvider.future);
 
   Future<void> load() async {
-    final tags = await (await repo).getAll();
+    final tags = await (await _repo).getAll();
 
     state = tags..sort((a, b) => a.name.compareTo(b.name));
   }
@@ -64,7 +64,7 @@ class FavoriteTagsNotifier extends Notifier<List<FavoriteTag>> {
       return;
     }
 
-    final repo = await this.repo;
+    final repo = await _repo;
     await repo.create(
       name: tag,
       labels: labels != null && labels.isNotEmpty
@@ -81,7 +81,7 @@ class FavoriteTagsNotifier extends Notifier<List<FavoriteTag>> {
   Future<void> update(String tag, FavoriteTag newTag) async {
     if (tag.isEmpty) return;
 
-    final repo = await this.repo;
+    final repo = await _repo;
     final targetTag = await repo.getFirst(tag);
 
     if (targetTag != null) {
@@ -99,7 +99,7 @@ class FavoriteTagsNotifier extends Notifier<List<FavoriteTag>> {
   Future<void> remove(String name) async {
     if (name.isEmpty) return;
 
-    final repo = await this.repo;
+    final repo = await _repo;
     final tag = await repo.getFirst(name);
 
     if (tag != null) {
@@ -116,7 +116,7 @@ class FavoriteTagsNotifier extends Notifier<List<FavoriteTag>> {
   Future<void> import(String tagString) async {
     if (tagString.isEmpty) return;
 
-    final repo = await this.repo;
+    final repo = await _repo;
     final tags = tagString.split(' ');
     for (final t in tags) {
       await repo.create(name: t);
@@ -130,7 +130,7 @@ class FavoriteTagsNotifier extends Notifier<List<FavoriteTag>> {
   Future<void> export({
     required void Function(String tagString) onDone,
   }) async {
-    final repo = await this.repo;
+    final repo = await _repo;
     final tags = await repo.getAll();
     final tagString = tags.map((e) => e.name).join(' ');
 
@@ -174,7 +174,7 @@ class FavoriteTagsNotifier extends Notifier<List<FavoriteTag>> {
     required BuildContext context,
     required String path,
   }) async {
-    final repo = await this.repo;
+    final repo = await _repo;
     await ref
         .read(favoriteTagsIOHandlerProvider)
         .import(
@@ -193,7 +193,7 @@ class FavoriteTagsNotifier extends Notifier<List<FavoriteTag>> {
     required String text,
     BuildContext? context,
   }) async {
-    final repo = await this.repo;
+    final repo = await _repo;
     await ref
         .read(favoriteTagsIOHandlerProvider)
         .importFromRawString(

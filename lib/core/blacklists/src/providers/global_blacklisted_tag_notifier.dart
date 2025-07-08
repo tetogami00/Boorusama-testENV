@@ -23,11 +23,11 @@ class GlobalBlacklistedTagsNotifier extends Notifier<IList<BlacklistedTag>> {
     return <BlacklistedTag>[].lock;
   }
 
-  Future<GlobalBlacklistedTagRepository> get futureRepo =>
+  Future<GlobalBlacklistedTagRepository> get _futureRepo =>
       ref.read(globalBlacklistedTagRepoProvider.future);
 
   Future<void> getBlacklist() async {
-    final repo = await futureRepo;
+    final repo = await _futureRepo;
     final tags = await repo.getBlacklist();
 
     state = tags.lock;
@@ -39,7 +39,7 @@ class GlobalBlacklistedTagsNotifier extends Notifier<IList<BlacklistedTag>> {
     void Function()? onError,
   }) async {
     try {
-      final repo = await futureRepo;
+      final repo = await _futureRepo;
       final newTag = await repo.addTag(tag);
 
       // If tag already exists, do nothing
@@ -68,7 +68,7 @@ class GlobalBlacklistedTagsNotifier extends Notifier<IList<BlacklistedTag>> {
 
       final newTags = <BlacklistedTag>[];
 
-      final repo = await futureRepo;
+      final repo = await _futureRepo;
 
       for (final tag in tags) {
         final newTag = await repo.addTag(tag);
@@ -89,7 +89,7 @@ class GlobalBlacklistedTagsNotifier extends Notifier<IList<BlacklistedTag>> {
     void Function()? onError,
   }) async {
     try {
-      final repo = await futureRepo;
+      final repo = await _futureRepo;
       await repo.removeTag(tag.id);
 
       state = state.remove(tag);
@@ -107,7 +107,7 @@ class GlobalBlacklistedTagsNotifier extends Notifier<IList<BlacklistedTag>> {
     void Function()? onError,
   }) async {
     try {
-      final repo = await futureRepo;
+      final repo = await _futureRepo;
       final updatedTag = await repo.updateTag(oldTag.id, newTag);
 
       state = state.remove(oldTag).add(updatedTag);
