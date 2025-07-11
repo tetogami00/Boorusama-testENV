@@ -7,12 +7,12 @@ import 'package:i18n/i18n.dart';
 import 'package:sliver_masonry_grid/sliver_masonry_grid.dart';
 
 // Project imports:
-import '../../../../../boorus/danbooru/errors.dart';
 import '../../../../../foundation/error.dart';
 import '../../../../settings/settings.dart';
 import '../../../../widgets/widgets.dart';
 import '../../../post/post.dart';
 import '../../widgets.dart';
+import '../utils/errors.dart';
 import '../utils/grid_utils.dart';
 import '../widgets/post_grid_controller.dart';
 import 'raw_post_grid.dart';

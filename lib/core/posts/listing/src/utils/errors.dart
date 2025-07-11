@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:i18n/i18n.dart';
 
 // Project imports:
-import '../../foundation/error.dart';
+import '../../../../../foundation/error.dart';
 
+//FIXME: must be handled by each booru
 String translateBooruError(BuildContext context, BooruError error) =>
     switch (error) {
       final AppError e => switch (e.type) {
