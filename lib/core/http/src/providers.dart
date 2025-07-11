@@ -22,6 +22,7 @@ import '../../ddos_solver/protection_handler.dart';
 import '../../ddos_solver/protection_orchestrator.dart';
 import '../../ddos_solver/protection_solver.dart';
 import '../../ddos_solver/user_agent_provider.dart';
+import '../../images/providers.dart' show extraHttpHeaderProvider;
 import '../../router.dart';
 import 'cookie_jar_providers.dart';
 import 'dio/dio.dart';
@@ -78,6 +79,17 @@ final userAgentProvider = Provider.family<String, BooruConfigAuth>(
     };
   },
 );
+
+final httpHeadersProvider =
+    Provider.family<Map<String, String>, BooruConfigAuth>(
+      (ref, config) {
+        return {
+          AppHttpHeaders.userAgentHeader: ref.watch(userAgentProvider(config)),
+          ...ref.watch(extraHttpHeaderProvider(config)),
+          ...ref.watch(cachedBypassDdosHeadersProvider(config.url)),
+        };
+      },
+    );
 
 final httpDdosProtectionBypassHandler = Provider<HttpProtectionHandler>(
   (ref) {
