@@ -10,6 +10,7 @@ import '../../../configs/config.dart';
 import '../../../configs/create/create.dart';
 import '../../../downloads/filename/types.dart';
 import '../../../downloads/urls/types.dart';
+import '../../../errors/types.dart';
 import '../../../notes/notes.dart';
 import '../../../posts/count/count.dart';
 import '../../../posts/favorites/types.dart';
@@ -43,4 +44,5 @@ abstract class BooruRepository {
   CommentRepository comment(BooruConfigAuth config);
   Dio dio(BooruConfigAuth config);
   Map<String, String> extraHttpHeaders(BooruConfigAuth config);
+  AppErrorTranslator appErrorTranslator(BooruConfigAuth config);
 }

@@ -12,6 +12,8 @@ import '../../../configs/config.dart';
 import '../../../configs/create/create.dart';
 import '../../../downloads/urls/providers.dart';
 import '../../../downloads/urls/types.dart';
+import '../../../errors/providers.dart';
+import '../../../errors/types.dart';
 import '../../../http/providers.dart';
 import '../../../notes/notes.dart';
 import '../../../posts/count/count.dart';
@@ -121,5 +123,10 @@ abstract class BooruRepositoryDefault implements BooruRepository {
   @override
   Map<String, String> extraHttpHeaders(BooruConfigAuth config) {
     return {};
+  }
+
+  @override
+  AppErrorTranslator appErrorTranslator(BooruConfigAuth config) {
+    return ref.watch(defaultAppErrorTranslatorProvider);
   }
 }
