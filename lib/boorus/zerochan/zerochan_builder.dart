@@ -18,6 +18,7 @@ class ZerochanBuilder
         DefaultMultiSelectionActionsBuilderMixin,
         DefaultHomeMixin,
         UnknownMetatagsMixin,
+        DefaultUnknownBooruWidgetsBuilderMixin,
         DefaultViewTagListBuilderMixin,
         DefaultTagSuggestionsItemBuilderMixin,
         DefaultPostImageDetailsUrlMixin,

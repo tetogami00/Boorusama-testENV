@@ -6,13 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
-import '../../../../boorus/booru/booru.dart';
-import '../../../auth/widgets.dart';
+import '../../../../boorus/engine/providers.dart';
+import '../../../config/types.dart';
 import '../../widgets.dart';
-import '../providers/internal_providers.dart';
-import '../widgets/booru_url_field.dart';
+import '../providers/providers.dart';
 import '../widgets/invalid_booru_warning_container.dart';
-import '../widgets/unknown_booru_submit_button.dart';
 import '../widgets/unknown_config_booru_selector.dart';
 
 class AddUnknownBooruPage extends ConsumerWidget {
@@ -27,8 +25,11 @@ class AddUnknownBooruPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final engine = ref.watch(booruEngineProvider);
     final theme = Theme.of(context);
+    final config = ref.watch(initialBooruConfigProvider);
+    final unknownBooruWidgetsBuilder = ref
+        .watch(booruBuilderProvider(config.auth))
+        ?.unknownBooruWidgetsBuilder;
 
     return Material(
       color: backgroundColor,
@@ -62,40 +63,11 @@ class AddUnknownBooruPage extends ConsumerWidget {
                 ),
                 const InvalidBooruWarningContainer(),
                 const UnknownConfigBooruSelector(),
-                const BooruConfigNameField(),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const BooruUrlField(),
-                      if (engine != BooruType.hydrus)
-                        const SizedBox(height: 16),
-                      if (engine != BooruType.hydrus)
-                        Text(
-                          'Advanced options (optional)',
-                          style: theme.textTheme.titleMedium,
-                        ),
-                      if (engine != BooruType.hydrus)
-                        const DefaultBooruInstructionText(
-                          '*These options only be used if the site allows it.',
-                        ),
-                      //FIXME: make this part of the config customisable
-                      if (engine != BooruType.hydrus)
-                        const SizedBox(height: 16),
-                      if (engine != BooruType.hydrus)
-                        const DefaultBooruLoginField(),
-                      const SizedBox(height: 16),
-                      const DefaultBooruApiKeyField(),
-                      const SizedBox(height: 16),
-                      const UnknownBooruSubmitButton(),
-                    ],
-                  ),
-                ),
+                if (unknownBooruWidgetsBuilder != null)
+                  unknownBooruWidgetsBuilder(context)
+                else
+                  const DefaultUnknownBooruWidgets(),
+                const SizedBox(height: 8),
               ],
             ),
           ),

@@ -24,6 +24,7 @@ class GelbooruV1Builder
         CharacterNotSupportedMixin,
         CommentNotSupportedMixin,
         UnknownMetatagsMixin,
+        DefaultUnknownBooruWidgetsBuilderMixin,
         DefaultViewTagListBuilderMixin,
         DefaultTagSuggestionsItemBuilderMixin,
         DefaultMultiSelectionActionsBuilderMixin,

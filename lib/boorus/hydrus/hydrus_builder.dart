@@ -126,6 +126,10 @@ class HydrusBuilder
           ),
     },
   );
+
+  @override
+  UnknownBooruWidgetsBuilder get unknownBooruWidgetsBuilder =>
+      (context) => const ApiKeyOnlyUnknownBooruWidgets();
 }
 
 class HydrusSearchPage extends ConsumerWidget {
