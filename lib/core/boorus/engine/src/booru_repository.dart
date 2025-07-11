@@ -42,4 +42,5 @@ abstract class BooruRepository {
   TagExtractor tagExtractor(BooruConfigAuth config);
   CommentRepository comment(BooruConfigAuth config);
   Dio dio(BooruConfigAuth config);
+  Map<String, String> extraHttpHeaders(BooruConfigAuth config);
 }

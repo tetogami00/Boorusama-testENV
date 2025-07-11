@@ -117,4 +117,9 @@ abstract class BooruRepositoryDefault implements BooruRepository {
   Dio dio(BooruConfigAuth config) {
     return ref.watch(defaultDioProvider(config));
   }
+
+  @override
+  Map<String, String> extraHttpHeaders(BooruConfigAuth config) {
+    return {};
+  }
 }
