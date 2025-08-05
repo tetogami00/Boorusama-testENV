@@ -40,6 +40,7 @@ dependencies:
   rich_text_controller:
     path: packages/rich_text_controller
 
+  archive: ^4.0.7
   android_intent_plus: ^5.1.0
   animated_list_plus: ^0.5.2
   background_downloader: ^9.1.1
