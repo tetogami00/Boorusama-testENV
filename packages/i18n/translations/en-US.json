@@ -369,6 +369,7 @@
       "backup_data": "Backup data",
       "advanced_export_import": "Advanced export/import",
       "auto_backup": "Auto backup",
+      "auto_backup_tooltip": "Backups are created when you open the app. No backups occur when the app is closed.",
       "backup_in_progress": "Backup already in progress",
       "export_operation_failed": "Export failed: {error}",
       "import_operation_failed": "Import failed: {error}",

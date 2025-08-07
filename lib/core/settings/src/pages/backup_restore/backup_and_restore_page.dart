@@ -109,12 +109,22 @@ class _BackupAndRestorePageState extends ConsumerState<BackupAndRestorePage> {
           child: TextButton.icon(
             onPressed: () => _navigateToManualBackup(),
             icon: const Icon(Icons.tune, size: 16),
-            label: Text(context.t.settings.backup_and_restore.advanced_export_import),
+            label: Text(
+              context.t.settings.backup_and_restore.advanced_export_import,
+            ),
           ),
         ),
         const SizedBox(height: 20),
         _Title(
           title: context.t.settings.backup_and_restore.auto_backup,
+          extra: Tooltip(
+            message: context.t.settings.backup_and_restore.auto_backup_tooltip,
+            triggerMode: TooltipTriggerMode.tap,
+            showDuration: const Duration(seconds: 5),
+            child: const Icon(
+              Icons.info,
+            ),
+          ),
         ),
         const SizedBox(height: 8),
         const AutoBackupSection(),
@@ -143,9 +153,11 @@ class _BackupAndRestorePageState extends ConsumerState<BackupAndRestorePage> {
 class _Title extends StatelessWidget {
   const _Title({
     required this.title,
+    this.extra,
   });
 
   final String title;
+  final Widget? extra;
 
   @override
   Widget build(BuildContext context) {
@@ -154,12 +166,20 @@ class _Title extends StatelessWidget {
         vertical: 12,
         horizontal: 8,
       ),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontWeight: FontWeight.w700,
-          fontSize: 18,
-        ),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+            ),
+          ),
+          if (extra != null) ...[
+            const SizedBox(width: 8),
+            extra!,
+          ],
+        ],
       ),
     );
   }
