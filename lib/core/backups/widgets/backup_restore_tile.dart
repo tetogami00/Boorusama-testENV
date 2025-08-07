@@ -43,8 +43,6 @@ class DefaultBackupTile extends ConsumerWidget {
   final Map<String, Widget> customActions;
   final void Function(BuildContext, WidgetRef, String)? onCustomAction;
   final List<Widget>? extra;
-
-  // Selection mode properties
   final bool isSelectionMode;
   final bool isSelected;
   final VoidCallback? onSelectionTap;
@@ -60,8 +58,12 @@ class DefaultBackupTile extends ConsumerWidget {
     }
 
     if (capabilities.clipboard != null) {
-      actions['exportClipboard'] = Text(context.t.settings.backup_and_restore.export_to_clipboard);
-      actions['importClipboard'] = Text(context.t.settings.backup_and_restore.import_from_clipboard);
+      actions['exportClipboard'] = Text(
+        context.t.settings.backup_and_restore.export_to_clipboard,
+      );
+      actions['importClipboard'] = Text(
+        context.t.settings.backup_and_restore.import_from_clipboard,
+      );
     }
 
     actions.addAll(customActions);
@@ -160,7 +162,10 @@ class DefaultBackupTile extends ConsumerWidget {
           if (context.mounted) {
             showSuccessToast(
               context,
-              context.t.settings.backup_and_restore.export_success.replaceAll('{source}', source.displayName),
+              context.t.settings.backup_and_restore.export_success.replaceAll(
+                '{source}',
+                source.displayName,
+              ),
             );
           }
         } catch (error) {
@@ -193,7 +198,10 @@ class DefaultBackupTile extends ConsumerWidget {
           if (context.mounted) {
             showSuccessToast(
               context,
-              context.t.settings.backup_and_restore.import_success.replaceAll('{source}', source.displayName),
+              context.t.settings.backup_and_restore.import_success.replaceAll(
+                '{source}',
+                source.displayName,
+              ),
             );
           }
         } on ImportCancelledException {
@@ -221,7 +229,8 @@ class DefaultBackupTile extends ConsumerWidget {
       if (context.mounted) {
         showSuccessToast(
           context,
-          context.t.settings.backup_and_restore.clipboard_export_success.replaceAll('{source}', source.displayName),
+          context.t.settings.backup_and_restore.clipboard_export_success
+              .replaceAll('{source}', source.displayName),
         );
       }
     } catch (error) {
@@ -246,7 +255,8 @@ class DefaultBackupTile extends ConsumerWidget {
       if (context.mounted) {
         showSuccessToast(
           context,
-          context.t.settings.backup_and_restore.clipboard_import_success.replaceAll('{source}', source.displayName),
+          context.t.settings.backup_and_restore.clipboard_import_success
+              .replaceAll('{source}', source.displayName),
         );
       }
     } on ImportCancelledException {
