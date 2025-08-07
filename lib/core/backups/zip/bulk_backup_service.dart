@@ -243,15 +243,7 @@ class BulkBackupService {
       final manifestFile = File(p.join(tempDir.path, _manifestFileName));
       await manifestFile.writeAsString(jsonEncode(manifest.toJson()));
 
-      // Create zip in isolate with progress callbacks
-      if (onProgress != null) {
-        await _createZipWithProgress(tempDir.path, zipPath, onProgress);
-      } else {
-        // Fallback to synchronous creation if no progress needed
-        final encoder = ZipFileEncoder()..create(zipPath);
-        await encoder.addDirectory(tempDir, includeDirName: false);
-        await encoder.close();
-      }
+      await _createZipWithProgress(tempDir.path, zipPath, onProgress);
 
       return BulkExportResult(
         success: sourceFiles.isNotEmpty,
@@ -310,7 +302,7 @@ class BulkBackupService {
   Future<void> _createZipWithProgress(
     String tempDirPath,
     String zipPath,
-    void Function(ZipProgressUpdate) onProgress,
+    void Function(ZipProgressUpdate)? onProgress,
   ) async {
     final receivePort = ReceivePort();
     final completer = Completer<void>();
@@ -318,7 +310,9 @@ class BulkBackupService {
     // Listen for progress updates
     receivePort.listen((data) {
       if (data is ZipProgressUpdate) {
-        onProgress(data);
+        if (onProgress != null) {
+          onProgress(data);
+        }
 
         if (data.isComplete) {
           receivePort.close();
