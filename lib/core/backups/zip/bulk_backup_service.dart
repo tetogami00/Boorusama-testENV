@@ -307,7 +307,6 @@ class BulkBackupService {
     final receivePort = ReceivePort();
     final completer = Completer<void>();
 
-    // Listen for progress updates
     receivePort.listen((data) {
       if (data is ZipProgressUpdate) {
         if (onProgress != null) {
@@ -325,7 +324,6 @@ class BulkBackupService {
       }
     });
 
-    // Spawn isolate
     await Isolate.spawn(
       _createZipInIsolate,
       ZipCreationMessage(
@@ -348,7 +346,6 @@ class BulkBackupService {
     final tempDir = await Directory.systemTemp.createTemp('boorusama_import_');
 
     try {
-      // Extract zip
       final bytes = await File(zipPath).readAsBytes();
       final archive = ZipDecoder().decodeBytes(bytes);
 
