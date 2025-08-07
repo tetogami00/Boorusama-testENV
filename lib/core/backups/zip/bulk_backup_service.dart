@@ -59,8 +59,8 @@ class BulkBackupManifest {
   };
 }
 
-class BulkBackupResult {
-  const BulkBackupResult({
+class BulkExportResult {
+  const BulkExportResult({
     required this.success,
     required this.exported,
     required this.failed,
@@ -192,7 +192,7 @@ class BulkBackupService {
     }
   }
 
-  Future<BulkBackupResult> exportToZip(
+  Future<BulkExportResult> exportToZip(
     String directoryPath,
     List<String> sourceIds, {
     void Function(ZipProgressUpdate)? onProgress,
@@ -253,7 +253,7 @@ class BulkBackupService {
         await encoder.close();
       }
 
-      return BulkBackupResult(
+      return BulkExportResult(
         success: sourceFiles.isNotEmpty,
         exported: sourceFiles.keys.toList(),
         failed: failed,

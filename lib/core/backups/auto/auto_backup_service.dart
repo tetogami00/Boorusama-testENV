@@ -90,7 +90,7 @@ class AutoBackupService {
   static const String _manifestFileName = 'auto_backup_manifest.json';
   static const String _backupFolderName = 'boorusama_auto_backups';
 
-  Future<BulkBackupResult> performBackup(
+  Future<BulkExportResult> performBackup(
     AutoBackupSettings settings, {
     void Function(double progress)? onProgress,
   }) async {

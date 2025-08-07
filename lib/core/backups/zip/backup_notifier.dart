@@ -36,7 +36,7 @@ class BackupState extends Equatable {
 
   final BackupStatus status;
   final double progress;
-  final BulkBackupResult? exportResult;
+  final BulkExportResult? exportResult;
   final BulkImportResult? importResult;
   final String? error;
 
@@ -46,7 +46,7 @@ class BackupState extends Equatable {
   BackupState copyWith({
     BackupStatus? status,
     double? progress,
-    BulkBackupResult? exportResult,
+    BulkExportResult? exportResult,
     BulkImportResult? importResult,
     String? error,
   }) {
@@ -89,7 +89,10 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
 
   Future<void> exportToZip(BuildContext context, List<String> sourceIds) async {
     if (state.isActive) {
-      showErrorToast(context, context.t.settings.backup_and_restore.backup_in_progress);
+      showErrorToast(
+        context,
+        context.t.settings.backup_and_restore.backup_in_progress,
+      );
       return;
     }
 
@@ -131,7 +134,11 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
       );
 
       if (context.mounted) {
-        showErrorToast(context, context.t.settings.backup_and_restore.export_operation_failed.replaceAll('{error}', e.toString()));
+        showErrorToast(
+          context,
+          context.t.settings.backup_and_restore.export_operation_failed
+              .replaceAll('{error}', e.toString()),
+        );
       }
     }
   }
@@ -141,7 +148,10 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
     List<String>? onlySourceIds,
   }) async {
     if (state.isActive) {
-      showErrorToast(context, context.t.settings.backup_and_restore.backup_in_progress);
+      showErrorToast(
+        context,
+        context.t.settings.backup_and_restore.backup_in_progress,
+      );
       return;
     }
 
@@ -187,7 +197,11 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
       );
 
       if (context.mounted) {
-        showErrorToast(context, context.t.settings.backup_and_restore.import_operation_failed.replaceAll('{error}', e.toString()));
+        showErrorToast(
+          context,
+          context.t.settings.backup_and_restore.import_operation_failed
+              .replaceAll('{error}', e.toString()),
+        );
       }
     }
   }
@@ -279,19 +293,22 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
     return selectedPath;
   }
 
-  void _showExportResult(BuildContext context, BulkBackupResult result) {
+  void _showExportResult(BuildContext context, BulkExportResult result) {
     if (result.success) {
       final message = result.hasFailures
           ? context.t.settings.backup_and_restore.export_partial_success
-              .replaceAll('{exported}', result.exported.length.toString())
-              .replaceAll('{total}', result.totalSources.toString())
-              .replaceAll('{failed}', result.failed.length.toString())
+                .replaceAll('{exported}', result.exported.length.toString())
+                .replaceAll('{total}', result.totalSources.toString())
+                .replaceAll('{failed}', result.failed.length.toString())
           : context.t.settings.backup_and_restore.export_complete_success
-              .replaceAll('{exported}', result.exported.length.toString());
+                .replaceAll('{exported}', result.exported.length.toString());
 
       showSuccessToast(context, message);
     } else {
-      showErrorToast(context, context.t.settings.backup_and_restore.export_no_items);
+      showErrorToast(
+        context,
+        context.t.settings.backup_and_restore.export_no_items,
+      );
     }
   }
 
@@ -299,18 +316,42 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
     if (result.success) {
       final parts = <String>[];
       if (result.imported.isNotEmpty) {
-        parts.add(context.t.settings.backup_and_restore.imported_count.replaceAll('{count}', result.imported.length.toString()));
+        parts.add(
+          context.t.settings.backup_and_restore.imported_count.replaceAll(
+            '{count}',
+            result.imported.length.toString(),
+          ),
+        );
       }
       if (result.skipped.isNotEmpty) {
-        parts.add(context.t.settings.backup_and_restore.skipped_count.replaceAll('{count}', result.skipped.length.toString()));
+        parts.add(
+          context.t.settings.backup_and_restore.skipped_count.replaceAll(
+            '{count}',
+            result.skipped.length.toString(),
+          ),
+        );
       }
       if (result.failed.isNotEmpty) {
-        parts.add(context.t.settings.backup_and_restore.failed_count.replaceAll('{count}', result.failed.length.toString()));
+        parts.add(
+          context.t.settings.backup_and_restore.failed_count.replaceAll(
+            '{count}',
+            result.failed.length.toString(),
+          ),
+        );
       }
 
-      showSuccessToast(context, context.t.settings.backup_and_restore.import_results.replaceAll('{results}', parts.join(', ')));
+      showSuccessToast(
+        context,
+        context.t.settings.backup_and_restore.import_results.replaceAll(
+          '{results}',
+          parts.join(', '),
+        ),
+      );
     } else {
-      showErrorToast(context, context.t.settings.backup_and_restore.import_no_items);
+      showErrorToast(
+        context,
+        context.t.settings.backup_and_restore.import_no_items,
+      );
     }
   }
 }
