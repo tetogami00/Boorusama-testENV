@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 // Package imports:
 import 'package:archive/archive_io.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:foundation/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:version/version.dart';
@@ -17,6 +18,7 @@ import 'package:version/version.dart';
 // Project imports:
 import '../../../foundation/info/package_info.dart';
 import '../sources/providers.dart';
+import '../types/backup_data_source.dart';
 import '../types/backup_registry.dart';
 import '../types/types.dart';
 import '../utils/backup_utils.dart';
@@ -215,32 +217,11 @@ class BulkBackupService {
 
       // Export each selected source to temp directory
       for (final source in selectedSources) {
-        try {
-          final fileCapability = source.capabilities.file;
-          if (fileCapability != null) {
-            // Get files before export
-            final filesBefore = _getDirectoryFiles(tempDir);
-
-            await fileCapability.export(tempDir.path);
-
-            // Get files after export to find what was created
-            final filesAfter = _getDirectoryFiles(tempDir);
-            final newFiles = filesAfter
-                .where((f) => !filesBefore.contains(f))
-                .toList();
-
-            if (newFiles.isNotEmpty) {
-              // Use the first new file (sources should only create one file)
-              sourceFiles[source.id] = p.basename(newFiles.first);
-            } else {
-              failed.add(source.id);
-            }
-          } else {
-            failed.add(source.id);
-          }
-        } catch (e) {
-          failed.add(source.id);
-        }
+        final result = await _exportSource(source, tempDir);
+        result.fold(
+          (error) => failed.add(source.id),
+          (fileName) => sourceFiles[source.id] = fileName,
+        );
       }
 
       // Add any requested source IDs that don't exist in registry
@@ -287,6 +268,38 @@ class BulkBackupService {
       } catch (_) {
         // Ignore cleanup errors
       }
+    }
+  }
+
+  Future<Either<ExportException, FileName>> _exportSource(
+    BackupDataSource source,
+    Directory tempDir,
+  ) async {
+    try {
+      final fileCapability = source.capabilities.file;
+      if (fileCapability == null) {
+        return left(const ExportException('No file export capability'));
+      }
+
+      // Get files before export
+      final filesBefore = _getDirectoryFiles(tempDir);
+
+      await fileCapability.export(tempDir.path);
+
+      // Get files after export to find what was created
+      final filesAfter = _getDirectoryFiles(tempDir);
+      final newFiles = filesAfter
+          .where((f) => !filesBefore.contains(f))
+          .toList();
+
+      if (newFiles.isEmpty) {
+        return left(const ExportException('No files created during export'));
+      }
+
+      // Use the first new file (sources should only create one file)
+      return right(p.basename(newFiles.first));
+    } catch (e) {
+      return left(ExportException('Export failed: $e'));
     }
   }
 
@@ -447,3 +460,14 @@ class BulkBackupService {
     }
   }
 }
+
+class ExportException implements Exception {
+  const ExportException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'ExportException: $message';
+}
+
+typedef FileName = String;
