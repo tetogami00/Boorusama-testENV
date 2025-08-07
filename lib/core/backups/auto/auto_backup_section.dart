@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
-import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
 import '../../../foundation/picker.dart';
 import '../../settings/providers.dart';
 import '../../settings/widgets.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/widgets.dart';
 import '../zip/providers.dart';
 import 'auto_backup_settings.dart';
@@ -36,17 +36,7 @@ class AutoBackupSection extends ConsumerWidget {
           children: [
             BooruSwitchListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              title: Row(
-                children: [
-                  Icon(
-                    Symbols.backup,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(context.t.settings.auto_backup.enable_auto_backup),
-                ],
-              ),
+              title: Text(context.t.settings.auto_backup.enable_auto_backup),
               value: settings.enabled,
               onChanged: isLoading
                   ? null
@@ -56,7 +46,7 @@ class AutoBackupSection extends ConsumerWidget {
                     ),
             ),
             if (settings.enabled) ...[
-              SettingsTile<AutoBackupFrequency>(
+              SettingsTile(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 title: Text(context.t.settings.auto_backup.backup_frequency),
                 selectedOption: settings.frequency,
@@ -74,10 +64,10 @@ class AutoBackupSection extends ConsumerWidget {
                 subtitle: Text(
                   _getLocationDisplay(context, settings),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.hintColor,
                   ),
                 ),
-                trailing: TextButton.icon(
+                trailing: TextButton(
                   onPressed: () async {
                     await pickDirectoryPathToastOnError(
                       context: context,
@@ -87,21 +77,15 @@ class AutoBackupSection extends ConsumerWidget {
                       ),
                     );
                   },
-                  icon: const Icon(Symbols.folder_open, size: 16),
-                  label: Text(context.t.settings.auto_backup.change),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                  ),
+
+                  child: Text(context.t.settings.auto_backup.change),
                 ),
               ),
-              SettingsTile<int>(
+              SettingsTile(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                title: Text(context.t.settings.auto_backup.keep_last_backups),
+                title: Text(context.t.settings.auto_backup.maximum_backups),
                 selectedOption: settings.maxBackups,
-                items: const [3, 5, 7, 10],
+                items: const [2, 3, 4, 5],
                 onChanged: (maxBackups) => _updateSettings(
                   settingsNotifier,
                   settings.copyWith(maxBackups: maxBackups),
@@ -197,25 +181,38 @@ class AutoBackupSection extends ConsumerWidget {
   }
 }
 
-  String _getLocationDisplay(BuildContext context, AutoBackupSettings settings) {
-    return settings.userSelectedPath ?? context.t.settings.backup_and_restore.default_backup_location;
+String _getLocationDisplay(BuildContext context, AutoBackupSettings settings) {
+  return settings.userSelectedPath ??
+      context.t.settings.backup_and_restore.default_backup_location;
+}
+
+String _getLastBackupDisplay(
+  BuildContext context,
+  AutoBackupSettings settings,
+) {
+  if (settings.lastBackupTime == null) {
+    return context.t.settings.backup_and_restore.never;
   }
 
-  String _getLastBackupDisplay(BuildContext context, AutoBackupSettings settings) {
-    if (settings.lastBackupTime == null) {
-      return context.t.settings.backup_and_restore.never;
-    }
+  final now = DateTime.now();
+  final diff = now.difference(settings.lastBackupTime!);
 
-    final now = DateTime.now();
-    final diff = now.difference(settings.lastBackupTime!);
-
-    if (diff.inDays > 0) {
-      return context.t.settings.backup_and_restore.days_ago.replaceAll('{days}', diff.inDays.toString());
-    } else if (diff.inHours > 0) {
-      return context.t.settings.backup_and_restore.hours_ago.replaceAll('{hours}', diff.inHours.toString());
-    } else if (diff.inMinutes > 0) {
-      return context.t.settings.backup_and_restore.minutes_ago.replaceAll('{minutes}', diff.inMinutes.toString());
-    } else {
-      return context.t.settings.backup_and_restore.just_now;
-    }
+  if (diff.inDays > 0) {
+    return context.t.settings.backup_and_restore.days_ago.replaceAll(
+      '{days}',
+      diff.inDays.toString(),
+    );
+  } else if (diff.inHours > 0) {
+    return context.t.settings.backup_and_restore.hours_ago.replaceAll(
+      '{hours}',
+      diff.inHours.toString(),
+    );
+  } else if (diff.inMinutes > 0) {
+    return context.t.settings.backup_and_restore.minutes_ago.replaceAll(
+      '{minutes}',
+      diff.inMinutes.toString(),
+    );
+  } else {
+    return context.t.settings.backup_and_restore.just_now;
   }
+}

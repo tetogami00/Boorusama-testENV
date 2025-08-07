@@ -392,7 +392,7 @@
       "enable_auto_backup": "Enable Auto Backup",
       "backup_frequency": "Backup Frequency",
       "backup_location": "Backup Location",
-      "keep_last_backups": "Keep Last Backups",
+      "maximum_backups": "Maximum Backups",
       "frequency": {
         "daily": "Daily",
         "weekly": "Weekly"
