@@ -103,8 +103,6 @@ class BackupTriggerNotifier extends Notifier<BackupTriggerState> {
   }
 }
 
-/// Widget that triggers auto backup when the app starts
-/// Add this to your main app widget tree
 class AutoBackupAppLifecycle extends ConsumerStatefulWidget {
   const AutoBackupAppLifecycle({
     required this.child,
