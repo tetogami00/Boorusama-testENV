@@ -37,7 +37,7 @@ jobs:
         
        #6 Building APK
       - name: Build APK
-        run: ./build.sh apk --flavor prod
+        run: ./build.sh apk --flavor dev
 
 
       - name: Compress Archives and IPAs
