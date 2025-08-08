@@ -21,4 +21,4 @@ jobs:
     
     
     - run: './gen.sh'
-    - run: flutter build apk
+    - run: ./build.sh apk --flavor dev
