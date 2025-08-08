@@ -29,7 +29,10 @@ jobs:
 
         #4 Install Dependencies
       - name: Install Dependencies
-        run: flutter pub get
+        run: 'flutter pub get'
+
+      - name: Gen
+        run: './gen.sh'
 
         
        #6 Building APK
@@ -56,8 +59,7 @@ jobs:
           name: Releases
           path: |
             build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
-            build/ios_build.tar.gz
+            
 
         #10 Extract Version
       - name: Extract version from pubspec.yaml
