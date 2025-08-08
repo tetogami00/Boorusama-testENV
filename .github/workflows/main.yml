@@ -37,15 +37,8 @@ jobs:
         
        #6 Building APK
       - name: Build APK
-        run: flutter build apk --release
+        run: ./build.sh apk --flavor prod
 
-        #7 Building App Bundle (aab)
-      - name: Build appBundle
-        run: flutter build appbundle
-
-        #8 Build IPA ( IOS Build )
-      - name: Build IPA
-        run: flutter build ipa --no-codesign
 
       - name: Compress Archives and IPAs
         run: |
@@ -90,6 +83,6 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/flutter-apk/app-release.apk,build/app/outputs/bundle/release/app-release.aab,build/ios_build.tar.gz"
+          artifacts: "build/app/outputs/flutter-apk/app-release.apk"
           tag: v${{ env.VERSION }}
           token: ${{ secrets.TOKEN }}
