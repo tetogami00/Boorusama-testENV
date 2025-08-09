@@ -51,7 +51,7 @@ get_app_name() {
 get_build_path() {
     case "$1" in
         android_apk) 
-            echo "$APP_OUTPUTS_DIR/flutter-apk/app-%s-%s.apk" ;;
+            echo "$APP_OUTPUTS_DIR/flutter-apk/app-release.apk" ;;
         android_aab_dev) 
             echo "$APP_OUTPUTS_DIR/bundle/devRelease/app-dev-release.aab" ;;
         android_aab_prod) 
