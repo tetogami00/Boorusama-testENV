@@ -46,7 +46,7 @@ jobs:
         with:
           name: Releases
           path: |
-            build/app/outputs/flutter-apk/app-release.apk
+            artifacts/*.apk
             
 
         #10 Extract Version
@@ -78,6 +78,6 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/flutter-apk/app-release.apk"
+          artifacts: "artifacts/*.apk"
           tag: v${{ env.VERSION }}
           token: ${{ secrets.TOKEN }}
