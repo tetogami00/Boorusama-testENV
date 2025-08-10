@@ -57,23 +57,12 @@ jobs:
           echo "VERSION=$version" >> $GITHUB_ENV
 
         #11 Check if Tag Exists
-      - name: Check if Tag Exists
-        id: check_tag
-        run: |
-          if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
-            echo "TAG_EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "TAG_EXISTS=false" >> $GITHUB_ENV
-          fi
-
-        #12 Modify Tag if it Exists
-      - name: Modify Tag
-        if: env.TAG_EXISTS == 'true'
-        id: modify_tag
-        run: |
-          new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
-          echo "VERSION=$new_version" >> $GITHUB_ENV
-        
+      - uses: ClementTsang/delete-tag-and-release@v0.3.1
+        with:
+         delete_release: true # default: false
+         tag_name: ${{ env.VERSION }} # tag name to delete
+        env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         #13 Create Release
       - name: Create Release
         uses: ncipollo/release-action@v1
