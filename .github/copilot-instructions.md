@@ -101,6 +101,12 @@ flutter format .
 
 The project supports multiple build configurations:
 
+**Build Script Help:**
+```bash
+# View all build options
+./build.sh apk --help
+```
+
 **Flavors:**
 - `dev`: Development build with debug features
 - `prod`: Production build for app stores
@@ -176,7 +182,7 @@ flutter run --flavor dev --release
   - `lib/boorus/`: Booru-specific implementations
   - `lib/core/`: Core application logic
   - `lib/foundation/`: Shared utilities and foundations
-- `packages/`: Workspace packages (11 local packages)
+- `packages/`: Workspace packages (10 local packages)
   - `packages/foundation/`: Core building blocks
   - `packages/booru_clients/`: API clients for different boorus
   - `packages/i18n/`: Internationalization
@@ -191,7 +197,7 @@ flutter run --flavor dev --release
 - Review `CONTRIBUTING.md` for commit message format
 
 **Workspace Configuration:**
-The project uses Flutter workspace feature with 11 local packages. Dependencies are managed at both root and package levels.
+The project uses Flutter workspace feature with 10 local packages. Dependencies are managed at both root and package levels.
 
 ## Validation and CI
 
