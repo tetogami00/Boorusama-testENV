@@ -9,7 +9,7 @@ import 'analytics_view_info.dart';
 
 class DebugPrintAnalyticsImpl implements AnalyticsInterface {
   DebugPrintAnalyticsImpl({
-    this.enabled = false,
+    this.enabled = true,
   });
 
   BooruConfig? _currentConfig;
