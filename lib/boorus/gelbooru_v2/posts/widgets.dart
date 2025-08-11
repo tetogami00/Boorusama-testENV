@@ -132,8 +132,13 @@ class _PostDetailsDataLoadingTransitionPage extends ConsumerWidget {
 
             // Create posts list with the detailed post at current index
             // but keep other posts as thumbnails so user can still swipe
+            // Note: When user swipes to other posts, they will see thumbnail data
+            // until they click to load detailed view for that specific post
             final updatedPosts = List<Post>.from(originalPayload.posts);
-            updatedPosts[originalPayload.initialIndex] = post;
+            if (originalPayload.initialIndex >= 0 && 
+                originalPayload.initialIndex < updatedPosts.length) {
+              updatedPosts[originalPayload.initialIndex] = post;
+            }
 
             final detailsContext = DetailsRouteContext(
               initialIndex: originalPayload.initialIndex,
