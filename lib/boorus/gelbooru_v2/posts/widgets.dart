@@ -53,6 +53,7 @@ class GelbooruV2PostDetailsPage extends ConsumerWidget {
       return _PostDetailsDataLoadingTransitionPage(
         postId: NumericPostId(postId),
         configSearch: configSearch,
+        originalPayload: payload,
         pageBuilder: (context, detailsContext) {
           final widget = InheritedDetailsContext(
             context: detailsContext,
@@ -105,10 +106,12 @@ class _PostDetailsDataLoadingTransitionPage extends ConsumerWidget {
     required this.pageBuilder,
     required this.postId,
     required this.configSearch,
+    required this.originalPayload,
   });
 
   final PostId postId;
   final BooruConfigSearch configSearch;
+  final DetailsRouteContext originalPayload;
 
   final Widget Function(
     BuildContext context,
@@ -127,15 +130,19 @@ class _PostDetailsDataLoadingTransitionPage extends ConsumerWidget {
               return InvalidPage(message: 'Invalid post: $post');
             }
 
+            // Create posts list with the detailed post at current index
+            // but keep other posts as thumbnails so user can still swipe
+            final updatedPosts = List<Post>.from(originalPayload.posts);
+            updatedPosts[originalPayload.initialIndex] = post;
+
             final detailsContext = DetailsRouteContext(
-              initialIndex: 0,
-              posts: [post],
-              scrollController: null,
-              isDesktop: false,
-              hero: false,
-              initialThumbnailUrl: null,
-              dislclaimer:
-                  'This site only supports viewing one post at a time.'.hc,
+              initialIndex: originalPayload.initialIndex,
+              posts: updatedPosts,
+              scrollController: originalPayload.scrollController,
+              isDesktop: originalPayload.isDesktop,
+              hero: originalPayload.hero,
+              initialThumbnailUrl: originalPayload.initialThumbnailUrl,
+              dislclaimer: null, // Remove the limiting disclaimer
               configSearch: configSearch,
             );
             return pageBuilder(context, detailsContext);
