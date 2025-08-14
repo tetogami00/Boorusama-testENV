@@ -18,80 +18,28 @@ SankakuPost postDtoToPost(
   final hasParent = e.parentId != null;
   final hasChilren = e.hasChildren ?? false;
   final hasParentOrChildren = hasParent || hasChilren;
-  final artistTags =
-      e.tags
-          ?.where(
-            (e) => TagCategory.fromLegacyId(e.type) == TagCategory.artist(),
-          )
-          .map(
-            (e) => Tag(
-              name: e.tagName ?? '????',
-              category: TagCategory.artist(),
-              postCount: e.postCount ?? 0,
-            ),
-          )
-          .toList() ??
-      [];
 
-  final characterTags =
-      e.tags
-          ?.where(
-            (e) => TagCategory.fromLegacyId(e.type) == TagCategory.character(),
-          )
-          .map(
-            (e) => Tag(
-              name: e.tagName ?? '????',
-              category: TagCategory.character(),
-              postCount: e.postCount ?? 0,
-            ),
-          )
-          .toList() ??
-      [];
+  // Optimize tag processing by grouping in a single pass instead of 5 separate iterations
+  final tagsByCategory = <TagCategory, List<Tag>>{};
+  
+  if (e.tags != null) {
+    for (final tagDto in e.tags!) {
+      final category = TagCategory.fromLegacyId(tagDto.type);
+      final tag = Tag(
+        name: tagDto.tagName ?? '????',
+        category: category,
+        postCount: tagDto.postCount ?? 0,
+      );
+      
+      tagsByCategory.putIfAbsent(category, () => <Tag>[]).add(tag);
+    }
+  }
 
-  final copyrightTags =
-      e.tags
-          ?.where(
-            (e) => TagCategory.fromLegacyId(e.type) == TagCategory.copyright(),
-          )
-          .map(
-            (e) => Tag(
-              name: e.tagName ?? '????',
-              category: TagCategory.copyright(),
-              postCount: e.postCount ?? 0,
-            ),
-          )
-          .toList() ??
-      [];
-
-  final generalTags =
-      e.tags
-          ?.where(
-            (e) => TagCategory.fromLegacyId(e.type) == TagCategory.general(),
-          )
-          .map(
-            (e) => Tag(
-              name: e.tagName ?? '????',
-              category: TagCategory.general(),
-              postCount: e.postCount ?? 0,
-            ),
-          )
-          .toList() ??
-      [];
-
-  final metaTags =
-      e.tags
-          ?.where(
-            (e) => TagCategory.fromLegacyId(e.type) == TagCategory.meta(),
-          )
-          .map(
-            (e) => Tag(
-              name: e.tagName ?? '????',
-              category: TagCategory.meta(),
-              postCount: e.postCount ?? 0,
-            ),
-          )
-          .toList() ??
-      [];
+  final artistTags = tagsByCategory[TagCategory.artist()] ?? [];
+  final characterTags = tagsByCategory[TagCategory.character()] ?? [];
+  final copyrightTags = tagsByCategory[TagCategory.copyright()] ?? [];
+  final generalTags = tagsByCategory[TagCategory.general()] ?? [];
+  final metaTags = tagsByCategory[TagCategory.meta()] ?? [];
 
   final timestamp = e.createdAt?.s;
 
