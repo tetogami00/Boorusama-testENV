@@ -19,7 +19,7 @@ import 'types/tag_resolver.dart';
 
 final tagGroupsProvider = FutureProvider.autoDispose
     .family<List<TagGroupItem>?, (BooruConfigAuth, Post)>((ref, params) async {
-      ref.cacheFor(const Duration(seconds: 15));
+      ref.cacheFor(const Duration(seconds: 30)); // Increased cache duration
 
       final config = params.$1;
       final post = params.$2;

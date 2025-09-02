@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:extended_image_library/extended_image_library.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_avif/flutter_avif.dart';
 import 'package:retriable/retriable.dart';
@@ -98,8 +99,16 @@ class CustomCachedNetworkAvifImageProvider extends NetworkAvifImage {
       debugLabel: key.url,
       informationCollector: () => <DiagnosticsNode>[
         ErrorDescription('Url: $url'),
+        DiagnosticsProperty<String>('Cache key', _generateCacheKey()),
       ],
       chunkEvents: chunkEvents.stream,
+    );
+  }
+
+  String _generateCacheKey() {
+    return cacheManager.generateCacheKey(
+      url,
+      customKey: cacheKey,
     );
   }
 
@@ -110,68 +119,108 @@ class CustomCachedNetworkAvifImageProvider extends NetworkAvifImage {
   ) async {
     assert(key == this);
 
-    final cacheKey = cacheManager.generateCacheKey(
-      url,
-      customKey: this.cacheKey,
-    );
-    final hasValidCache = await cacheManager.hasValidCache(
-      cacheKey,
-      maxAge: cacheMaxAge,
-    );
-
-    // Try to load from cache first
-    if (hasValidCache) {
-      final cachedBytes = await cacheManager.getCachedFileBytes(cacheKey);
-      if (cachedBytes != null) {
-        return _processAvifBytes(cachedBytes, chunkEvents);
-      }
-    }
-
-    // If not in cache, fetch from network
+    final stopwatch = Stopwatch()..start();
+    final cacheKey = _generateCacheKey();
+    
     try {
-      final resolved = Uri.base.resolve(url);
-
-      final response = await tryGetResponse<List<int>>(
-        resolved,
-        dio: dio,
-        cancelToken: cancelToken,
-        fetchStrategy: fetchStrategy,
-        options: Options(
-          responseType: ResponseType.bytes,
-          headers: headers,
-        ),
-        onReceiveProgress: (count, total) {
-          if (!chunkEvents.isClosed && total >= 0) {
-            chunkEvents.add(
-              ImageChunkEvent(
-                cumulativeBytesLoaded: count,
-                expectedTotalBytes: total,
-              ),
-            );
-          }
-        },
+      final hasValidCache = await cacheManager.hasValidCache(
+        cacheKey,
+        maxAge: cacheMaxAge,
       );
 
-      if (response == null || response.data == null) {
-        throw StateError('Failed to load $url: Empty response');
+      // Try to load from cache first
+      if (hasValidCache) {
+        final cacheStopwatch = Stopwatch()..start();
+        try {
+          final cachedBytes = await cacheManager.getCachedFileBytes(cacheKey);
+          if (cachedBytes != null && cachedBytes.isNotEmpty) {
+            cacheStopwatch.stop();
+            if (kDebugMode) {
+              debugPrint('AVIF cache hit for $url (${cacheStopwatch.elapsedMilliseconds}ms)');
+            }
+            return _processAvifBytes(cachedBytes, chunkEvents);
+          }
+        } catch (e) {
+          // Cache corruption, continue with network fetch
+          cacheStopwatch.stop();
+          if (kDebugMode) {
+            debugPrint('Cache read failed for $url: $e (${cacheStopwatch.elapsedMilliseconds}ms)');
+          }
+        }
       }
 
-      final bytes = Uint8List.fromList(response.data!);
+      // If not in cache or cache failed, fetch from network
+      final networkStopwatch = Stopwatch()..start();
+      try {
+        final resolved = Uri.base.resolve(url);
 
-      // Save to cache
-      if (bytes.isNotEmpty) {
-        await cacheManager.saveFile(cacheKey, bytes);
+        final response = await tryGetResponse<List<int>>(
+          resolved,
+          dio: dio,
+          cancelToken: cancelToken,
+          fetchStrategy: fetchStrategy,
+          options: Options(
+            responseType: ResponseType.bytes,
+            headers: headers,
+            // Add connection timeout for better performance
+            connectTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(minutes: 2),
+          ),
+          onReceiveProgress: (count, total) {
+            if (!chunkEvents.isClosed && total >= 0) {
+              chunkEvents.add(
+                ImageChunkEvent(
+                  cumulativeBytesLoaded: count,
+                  expectedTotalBytes: total,
+                ),
+              );
+            }
+          },
+        );
+
+        if (response == null || response.data == null) {
+          throw StateError('Failed to load $url: Empty response');
+        }
+
+        final bytes = Uint8List.fromList(response.data!);
+        networkStopwatch.stop();
+
+        if (kDebugMode) {
+          debugPrint('AVIF network fetch for $url (${networkStopwatch.elapsedMilliseconds}ms, ${bytes.length} bytes)');
+        }
+
+        // Validate bytes before caching
+        if (bytes.isNotEmpty && _isValidAvifHeader(bytes)) {
+          // Save to cache asynchronously to not block UI
+          unawaited(cacheManager.saveFile(cacheKey, bytes));
+        }
+
+        return _processAvifBytes(bytes, chunkEvents);
+      } on OperationCanceledError catch (_) {
+        PaintingBinding.instance.imageCache.evict(key);
+        chunkEvents.close();
+        throw StateError('User canceled request $url.');
+      } catch (e) {
+        networkStopwatch.stop();
+        PaintingBinding.instance.imageCache.evict(key);
+        chunkEvents.close();
+        throw StateError('Failed to load $url: $e');
       }
+    } finally {
+      stopwatch.stop();
+      if (kDebugMode) {
+        debugPrint('Total AVIF load time for $url: ${stopwatch.elapsedMilliseconds}ms');
+      }
+    }
+  }
 
-      return _processAvifBytes(bytes, chunkEvents);
-    } on OperationCanceledError catch (_) {
-      PaintingBinding.instance.imageCache.evict(key);
-      chunkEvents.close();
-      throw StateError('User canceled request $url.');
+  bool _isValidAvifHeader(Uint8List bytes) {
+    if (bytes.length < 16) return false;
+    try {
+      final fType = isAvifFile(bytes.sublist(0, 16));
+      return fType != AvifFileType.unknown;
     } catch (e) {
-      PaintingBinding.instance.imageCache.evict(key);
-      chunkEvents.close();
-      throw StateError('Failed to load $url: $e');
+      return false;
     }
   }
 

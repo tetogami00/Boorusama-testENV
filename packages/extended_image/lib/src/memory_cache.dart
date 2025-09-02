@@ -18,16 +18,26 @@ class LRUMemoryCache implements MemoryCache {
   final int maxEntries;
   final int maxSizePerEntry;
 
-  final Map<String, _CacheEntry> _cache = <String, _CacheEntry>{};
-  final List<String> _accessOrder = <String>[];
+  final Map<String, _CacheNode> _cache = <String, _CacheNode>{};
+  _CacheNode? _head;
+  _CacheNode? _tail;
+  int _currentSize = 0;
+
+  // Performance metrics
+  int _hits = 0;
+  int _misses = 0;
+
+  double get hitRate => _hits + _misses > 0 ? _hits / (_hits + _misses) : 0.0;
 
   @override
   Uint8List? get(String key) {
-    final entry = _cache[key];
-    if (entry != null) {
-      _updateAccessOrder(key);
-      return entry.data;
+    final node = _cache[key];
+    if (node != null) {
+      _moveToFront(node);
+      _hits++;
+      return node.data;
     }
+    _misses++;
     return null;
   }
 
@@ -38,9 +48,12 @@ class LRUMemoryCache implements MemoryCache {
       return;
     }
 
-    // Remove existing entry if present
-    if (_cache.containsKey(key)) {
-      remove(key);
+    final existingNode = _cache[key];
+    if (existingNode != null) {
+      // Update existing entry
+      existingNode.data = data;
+      _moveToFront(existingNode);
+      return;
     }
 
     // Ensure we have space
@@ -49,47 +62,85 @@ class LRUMemoryCache implements MemoryCache {
     }
 
     // Add new entry
-    _cache[key] = _CacheEntry(data);
-    _accessOrder.add(key);
+    final newNode = _CacheNode(key, data);
+    _cache[key] = newNode;
+    _addToFront(newNode);
+    _currentSize++;
   }
 
   @override
   bool contains(String key) {
     final exists = _cache.containsKey(key);
     if (exists) {
-      _updateAccessOrder(key);
+      final node = _cache[key]!;
+      _moveToFront(node);
     }
     return exists;
   }
 
   @override
   void remove(String key) {
-    final entry = _cache.remove(key);
-    if (entry != null) {
-      _accessOrder.remove(key);
+    final node = _cache.remove(key);
+    if (node != null) {
+      _removeNode(node);
+      _currentSize--;
     }
   }
 
   @override
   void clear() {
     _cache.clear();
-    _accessOrder.clear();
+    _head = null;
+    _tail = null;
+    _currentSize = 0;
+    _hits = 0;
+    _misses = 0;
   }
 
-  void _updateAccessOrder(String key) {
-    _accessOrder.remove(key);
-    _accessOrder.add(key);
+  void _addToFront(_CacheNode node) {
+    if (_head == null) {
+      _head = _tail = node;
+    } else {
+      node.next = _head;
+      _head!.prev = node;
+      _head = node;
+    }
+  }
+
+  void _removeNode(_CacheNode node) {
+    if (node.prev != null) {
+      node.prev!.next = node.next;
+    } else {
+      _head = node.next;
+    }
+
+    if (node.next != null) {
+      node.next!.prev = node.prev;
+    } else {
+      _tail = node.prev;
+    }
+  }
+
+  void _moveToFront(_CacheNode node) {
+    _removeNode(node);
+    _addToFront(node);
   }
 
   void _evictLeastRecentlyUsed() {
-    if (_accessOrder.isNotEmpty) {
-      final oldestKey = _accessOrder.first;
-      remove(oldestKey);
+    if (_tail != null) {
+      final key = _tail!.key;
+      _cache.remove(key);
+      _removeNode(_tail!);
+      _currentSize--;
     }
   }
 }
 
-class _CacheEntry {
-  const _CacheEntry(this.data);
-  final Uint8List data;
+class _CacheNode {
+  _CacheNode(this.key, this.data);
+  
+  final String key;
+  Uint8List data;
+  _CacheNode? prev;
+  _CacheNode? next;
 }

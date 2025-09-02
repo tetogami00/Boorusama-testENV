@@ -26,31 +26,59 @@ class TagGroupItem extends Equatable {
 }
 
 extension TagGroupItemX on TagGroupItem {
-  List<String> extractRawTag(TagCategory category) =>
-      tags.where((e) => category == e.category).map((e) => e.rawName).toList();
+  // Cache the extracted tags to avoid recomputation
+  static final Map<String, List<String>> _extractionCache = <String, List<String>>{};
+  
+  List<String> extractRawTag(TagCategory category) {
+    final cacheKey = '${hashCode}_${category.id}';
+    
+    return _extractionCache.putIfAbsent(cacheKey, () =>
+        tags.where((e) => category == e.category).map((e) => e.rawName).toList());
+  }
 
   List<String> extractArtistTags() => extractRawTag(TagCategory.artist());
   List<String> extractCharacterTags() => extractRawTag(TagCategory.character());
   List<String> extractGeneralTags() => extractRawTag(TagCategory.general());
   List<String> extractMetaTags() => extractRawTag(TagCategory.meta());
   List<String> extractCopyRightTags() => extractRawTag(TagCategory.copyright());
+  
+  static void clearCache() {
+    _extractionCache.clear();
+  }
 }
 
+// Cache for createTagGroupItems to avoid recomputation for same tag sets
+final Map<int, List<TagGroupItem>> _tagGroupCache = <int, List<TagGroupItem>>{};
+
 List<TagGroupItem> createTagGroupItems(List<Tag> tags) {
-  tags.sort((a, b) => a.rawName.compareTo(b.rawName));
-  final group =
-      tags
-          .groupBy((e) => e.category)
-          .entries
-          .map(
-            (e) => TagGroupItem(
-              category: e.key.id,
-              groupName: e.key.displayName ?? e.key.name.sentenceCase,
-              tags: e.value,
-              order: e.key.order ?? 99999,
-            ),
-          )
-          .toList()
-        ..sort((a, b) => a.order.compareTo(b.order));
-  return group;
+  if (tags.isEmpty) return const <TagGroupItem>[];
+  
+  // Create a cache key based on the tags
+  final cacheKey = Object.hashAll(tags.map((e) => e.hashCode));
+  
+  return _tagGroupCache.putIfAbsent(cacheKey, () {
+    // Create a copy to avoid modifying the original list
+    final sortedTags = [...tags]..sort((a, b) => a.rawName.compareTo(b.rawName));
+    
+    final group = sortedTags
+        .groupBy((e) => e.category)
+        .entries
+        .map(
+          (e) => TagGroupItem(
+            category: e.key.id,
+            groupName: e.key.displayName ?? e.key.name.sentenceCase,
+            tags: e.value,
+            order: e.key.order ?? 99999,
+          ),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+    
+    return group;
+  });
+}
+
+void clearTagGroupCache() {
+  _tagGroupCache.clear();
+  TagGroupItemX.clearCache();
 }
