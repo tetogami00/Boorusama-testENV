@@ -1,0 +1,93 @@
+name: "Dev Build"
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_mode:
+        description: 'Build in release mode'
+        type: boolean
+        default: true
+
+jobs:  
+  build:      
+    name: Build Dev APK
+    runs-on: ubuntu-latest
+
+    steps:
+        #1 Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+        #2 Setup Java
+      - name: Set Up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      #3 Setup Flutter
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.24.5
+          channel: 'stable'
+          cache: true
+
+        #4 Install Dependencies
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Generate Code
+        run: ./gen.sh
+
+      #5 Building APK
+      - name: Build Dev APK
+        run: |
+          if [ "${{ inputs.release_mode }}" = "true" ]; then
+            ./build.sh apk --flavor dev --release
+          else
+            ./build.sh apk --flavor dev --debug
+          fi
+
+        #6 Upload Artifacts
+      - name: Upload Dev APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: boorusama-dev-apk
+          path: |
+            artifacts/*.apk
+          retention-days: 30
+
+        #7 Extract Version for Release
+      - name: Extract version from pubspec.yaml
+        id: extract_version
+        run: |
+          version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
+          echo "VERSION=$version" >> $GITHUB_ENV
+          echo "APK_NAME=boorusama-${version}-dev.apk" >> $GITHUB_ENV
+
+        #8 Create Pre-release (optional)
+      - name: Create Dev Release
+        if: inputs.release_mode == true
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "artifacts/*.apk"
+          tag: "dev-v${{ env.VERSION }}"
+          name: "Dev Build v${{ env.VERSION }}"
+          body: |
+            ## Development Build
+            
+            This is an automated development build of Boorusama.
+            
+            **Build Info:**
+            - Version: ${{ env.VERSION }}
+            - Flavor: dev
+            - Mode: release
+            - App Name: Boorusama Dev
+            
+            **Installation:**
+            Download the APK file and install on your Android device.
+            
+            **Note:** This is a development build and may contain experimental features.
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
