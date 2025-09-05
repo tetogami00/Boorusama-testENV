@@ -36,8 +36,9 @@ class LruCacher<K, V> implements Cacher<K, V> {
     if (!exist(key)) return null;
     final value = _cache[key];
 
-    _list.remove(value);
-    _cache.remove(value);
+    // Update access order - move to front
+    _list.remove(key);
+    _list.addFirst(key);
 
     return value!.value;
   }
